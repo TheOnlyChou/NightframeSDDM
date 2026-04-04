@@ -9,4 +9,7 @@ QtObject {
     readonly property int loginPanelMaxWidth: 520
     readonly property int controlHeight: 44
     readonly property int controlRadius: 10
+    readonly property int floatingControlsHeight: 52
+    readonly property int floatingControlsRadius: 12
+    readonly property int floatingControlsPadding: 6
 }

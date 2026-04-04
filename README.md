@@ -13,6 +13,10 @@ It focuses on anime-night / cyber-night wallpaper aesthetics with a readable, mi
 - Modular QML component structure
 - SVG power buttons (sleep, reboot, shutdown)
 
+## Current style
+
+![Current style](image.png)
+
 ## Project Structure
 
 ~~~text

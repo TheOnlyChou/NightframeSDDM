@@ -132,47 +132,71 @@ Rectangle {
         }
     }
 
-    Row {
+    Rectangle {
         id: bottomRightControls
+        height: metrics.floatingControlsHeight
+        radius: metrics.floatingControlsRadius
+        color: palette.panelGlassStrong
+        border.width: 1
+        border.color: palette.borderSubtle
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.rightMargin: metrics.edgeMargin
         anchors.bottomMargin: metrics.edgeMargin
-        spacing: 14
+        width: controlsRow.implicitWidth + metrics.floatingControlsPadding * 2
 
-        Session.SessionBar {
-            id: sessionBar
-            sessionModelRef: typeof sessionModel !== "undefined" ? sessionModel : null
-            palette: palette
-            fontFamily: themeFonts.uiFamily
-        }
+        Row {
+            id: controlsRow
+            anchors.fill: parent
+            anchors.margins: metrics.floatingControlsPadding
+            spacing: 10
 
-        Power.PowerBar {
-            id: powerBar
-            palette: palette
-            fontFamily: themeFonts.uiFamily
-            onRequestSuspend: {
-                if (typeof sddm !== "undefined" && sddm) {
-                    sddm.suspend()
-                } else {
-                    root.statusText = "Test mode: suspend"
-                    root.statusType = "info"
-                }
+            Session.SessionBar {
+                id: sessionBar
+                height: parent.height
+                sessionModelRef: typeof sessionModel !== "undefined" ? sessionModel : null
+                palette: palette
+                fontFamily: themeFonts.uiFamily
+                showBackground: false
             }
-            onRequestReboot: {
-                if (typeof sddm !== "undefined" && sddm) {
-                    sddm.reboot()
-                } else {
-                    root.statusText = "Test mode: reboot"
-                    root.statusType = "info"
-                }
+
+            Rectangle {
+                width: 1
+                height: parent.height - 8
+                anchors.verticalCenter: parent.verticalCenter
+                color: "#355174"
+                opacity: 0.45
             }
-            onRequestShutdown: {
-                if (typeof sddm !== "undefined" && sddm) {
-                    sddm.powerOff()
-                } else {
-                    root.statusText = "Test mode: shutdown"
-                    root.statusType = "info"
+
+            Power.PowerBar {
+                id: powerBar
+                height: parent.height
+                palette: palette
+                fontFamily: themeFonts.uiFamily
+                showBackground: false
+                onRequestSuspend: {
+                    if (typeof sddm !== "undefined" && sddm) {
+                        sddm.suspend()
+                    } else {
+                        root.statusText = "Test mode: suspend"
+                        root.statusType = "info"
+                    }
+                }
+                onRequestReboot: {
+                    if (typeof sddm !== "undefined" && sddm) {
+                        sddm.reboot()
+                    } else {
+                        root.statusText = "Test mode: reboot"
+                        root.statusType = "info"
+                    }
+                }
+                onRequestShutdown: {
+                    if (typeof sddm !== "undefined" && sddm) {
+                        sddm.powerOff()
+                    } else {
+                        root.statusText = "Test mode: shutdown"
+                        root.statusType = "info"
+                    }
                 }
             }
         }
