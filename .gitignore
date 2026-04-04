@@ -1,0 +1,45 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editors / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs and temporary files
+*.log
+tmp/
+.temp/
+.cache/
+
+# Qt / QML local artifacts
+*.qmlc
+*.jsc
+*.qrc.depends
+qmldir.cache
+
+# Build output (if local experiments create these)
+build/
+cmake-build-*/
+*.o
+*.so
+*.a
+
+# Test capture output (optional local previews)
+previews/
+*.mp4
+*.webm
+*.gif
+
+# Keep real theme assets tracked by default
+!assets/video/
+!assets/video/**
+!assets/backgrounds/
+!assets/backgrounds/**
+!assets/svg/
+!assets/svg/**
+!assets/fonts/
+!assets/fonts/**
