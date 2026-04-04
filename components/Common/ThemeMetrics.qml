@@ -1,0 +1,12 @@
+import QtQuick 2.15
+
+QtObject {
+    id: root
+
+    readonly property int edgeMargin: Math.max(28, Screen.width * 0.035)
+    readonly property int leftPanelMargin: Math.max(42, Screen.width * 0.075)
+    readonly property int panelRadius: 14
+    readonly property int loginPanelMaxWidth: 520
+    readonly property int controlHeight: 44
+    readonly property int controlRadius: 10
+}
