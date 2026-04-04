@@ -27,9 +27,9 @@ Item {
 
     Rectangle {
         anchors.fill: panelColumn
-        anchors.margins: -18
+        anchors.margins: -20
         radius: 14
-        color: "#44101a29"
+        color: "#3c101a29"
         border.width: 1
         border.color: palette ? palette.borderSubtle : "#2a3f5f"
     }
@@ -37,12 +37,12 @@ Item {
     Column {
         id: panelColumn
         width: root.width
-        spacing: 12
+        spacing: 10
 
         Text {
             text: root.titleText
             color: palette ? palette.textPrimary : "#d9e7ff"
-            font.pixelSize: 30
+            font.pixelSize: 28
             font.family: root.fontFamily
             font.letterSpacing: 1.0
         }
@@ -50,9 +50,12 @@ Item {
         Text {
             text: root.subtitleText
             color: palette ? palette.textMuted : "#8ea5c7"
-            font.pixelSize: 14
+            opacity: 0.9
+            font.pixelSize: 13
             font.family: root.fontFamily
         }
+
+        Item { width: 1; height: 2 }
 
         Auth.UserDisplay {
             id: userDisplay
@@ -74,6 +77,8 @@ Item {
             fontFamily: root.fontFamily
             onAccepted: root.loginRequested(userDisplay.selectedUser, text)
         }
+
+        Item { width: 1; height: 2 }
 
         Auth.LoginButton {
             width: parent.width

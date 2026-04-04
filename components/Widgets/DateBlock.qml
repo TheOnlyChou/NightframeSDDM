@@ -8,8 +8,9 @@ Text {
 
     text: Qt.formatDate(new Date(), "ddd, dd MMM yyyy")
     color: root.textColor
+    opacity: 0.78
     font.family: root.fontFamily
-    font.pixelSize: 16
+    font.pixelSize: 14
     font.letterSpacing: 0.8
 
     Timer {

@@ -10,8 +10,8 @@ Text {
     text: Qt.formatTime(new Date(), use24h ? "HH:mm" : "hh:mm AP")
     color: root.textColor
     font.family: root.fontFamily
-    font.pixelSize: Math.max(46, Screen.height * 0.058)
-    font.letterSpacing: 1.8
+    font.pixelSize: Math.max(50, Screen.height * 0.062)
+    font.letterSpacing: 1.6
 
     Timer {
         interval: 1000

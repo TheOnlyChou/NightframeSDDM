@@ -12,9 +12,11 @@ Rectangle {
     width: parent ? parent.width : 420
     height: 46
     radius: 10
-    color: mouseArea.containsMouse ? Qt.darker(colorAccent, 1.15) : colorAccent
+    color: mouseArea.pressed
+           ? Qt.darker(colorAccent, 2.10)
+           : (mouseArea.containsMouse ? Qt.darker(colorAccent, 1.85) : Qt.darker(colorAccent, 1.98))
     border.width: 1
-    border.color: Qt.lighter(colorAccent, 1.2)
+    border.color: mouseArea.containsMouse ? Qt.darker(colorAccent, 1.30) : Qt.darker(colorAccent, 1.45)
 
     Text {
         anchors.centerIn: parent
@@ -30,5 +32,11 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         onClicked: root.clicked()
+    }
+
+    Behavior on color {
+        ColorAnimation {
+            duration: 120
+        }
     }
 }
