@@ -12,28 +12,54 @@ NightframeSDDM supports two customization paths:
 - UseVideo: true or false
 - BackgroundImage: image path relative to theme root
 - BackgroundVideo: video path relative to theme root
-- OverlayStrength: 0.0 to 0.8 (recommended 0.40 to 0.55)
+- UiFont: UI font file path
+- ClockFont: clock font file path
 - AccentColor: hex accent color
+- SecondaryAccentColor: secondary accent used by stylized controls
+- OverlayStrength: 0.0 to 0.8 (recommended 0.36 to 0.60)
+- OverlayTint: atmospheric overlay tint color
+- PanelTint: panel glass tint color
 - PanelOpacity: login + control surface opacity scalar
 - PanelRadius: corner radius for key surfaces
-- ControlDensity: scales compactness for bottom-right controls
+- ControlDensity: scales compactness across login and bottom controls
+- ClockScale: scales clock typography per preset
+- TitleOpacity: main login title opacity
+- SubtitleOpacity: subtitle/date opacity
+- BottomControlsOpacity: opacity of session/power dock
+- PanelHorizontalOffset: horizontal login panel offset
+- PanelVerticalOffset: vertical login panel offset
+- SessionStyle: balanced, minimal, soft, pixel
+- TransitionProfile: default, night, rain, pixel
+- ControlSpacing: spacing for control groups and panel internals
+- PanelBorderStrength: border emphasis for panel/control surfaces
 - Clock24h: true or false
-- PixelFont: optional font path
 
 ## Preset Workflow
 
 Test with preset without modifying repository config:
 
 ```bash
-./scripts/test.sh image --preset night
-./scripts/test.sh video --preset rain
+./scripts/test.sh --preset default
+./scripts/test.sh --preset night
+./scripts/test.sh --preset rain
+./scripts/test.sh --preset pixel
 ```
 
 Install with preset:
 
 ```bash
+./scripts/install.sh --preset default
+./scripts/install.sh --preset night
 ./scripts/install.sh --preset rain
+./scripts/install.sh --preset pixel
 ```
+
+## V4 Preset Intent
+
+- `default`: neutral baseline for readability and wallpaper visibility
+- `night`: premium, sharper, darker, more restrained
+- `rain`: softer and rounder with diffuse contrast
+- `pixel`: most stylized preset, compact and squarer with optional video-first mood
 
 ## Video Notes
 

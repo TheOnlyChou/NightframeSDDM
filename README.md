@@ -2,20 +2,46 @@
 
 NightframeSDDM is a custom dark cinematic SDDM theme built with Qt6/QML.
 
+V4 introduces preset identities that are visually distinct at a glance, not only numerically different.
+
 It keeps wallpaper visibility high, uses a minimal login surface, and includes SVG power controls with optional video background support.
 
 ## Features
 
-- Stable image-first mode (default)
-- Optional video background mode
+- Identity-driven presets (default, night, rain, pixel)
+- Stable image-first mode (default, night, rain)
+- Optional video background mode with safe fallback (pixel)
 - Automatic fallback to image when video fails
 - Modular QML architecture for maintainability
 - Preset system via `presets/*.conf`
 - SVG icon power controls (sleep, reboot, shutdown)
 
-## Current Style
+## V4 Preset Identities
 
-![Current style](image.png)
+- `default`: balanced urban-anime baseline, teal-cyan accent, clean readable spacing
+- `night`: deeper premium cinematic blue, sharper radii, restrained compact controls
+- `rain`: softer atmospheric grey-blue, rounder panel geometry, calmer cozy spacing
+- `pixel`: neon arcade mood, compact squarer controls, video-first with robust fallback
+
+## Presets Preview
+
+NightframeSDDM includes four distinct preset identities, each with its own mood, typography, color treatment, and media direction.
+
+### Default
+Balanced urban anime baseline with a clean teal/cyan atmosphere.  
+![Default preset](screenshots/default.png)
+
+### Night
+A darker, more premium cinematic preset with a restrained celestial blue mood.  
+![Night preset](screenshots/night.png)
+
+### Rain
+A softer and cozier preset with a rainy indoor atmosphere and gentler surfaces.  
+![Rain preset](screenshots/rain.png)
+
+### Pixel
+A more stylized retro preset with a neon arcade-inspired identity.  
+![Pixel preset](screenshots/pixel.png)
 
 ## Project Tree
 
@@ -59,24 +85,13 @@ NightframeSDDM/
 
 ## Local Testing
 
-Image mode (default):
+Preset-driven testing:
 
 ~~~bash
-./scripts/test.sh
-./scripts/test.sh image
-~~~
-
-Video mode (optional):
-
-~~~bash
-./scripts/test.sh video
-~~~
-
-Test with a preset:
-
-~~~bash
-./scripts/test.sh image --preset night
-./scripts/test.sh video --preset rain
+./scripts/test.sh --preset default
+./scripts/test.sh --preset night
+./scripts/test.sh --preset rain
+./scripts/test.sh --preset pixel
 ~~~
 
 List available presets:
@@ -88,7 +103,7 @@ List available presets:
 Reduce local multimedia warning noise:
 
 ~~~bash
-NIGHTFRAME_QUIET_TEST=1 ./scripts/test.sh video
+NIGHTFRAME_QUIET_TEST=1 ./scripts/test.sh --preset pixel
 ~~~
 
 ## Install Workflow
@@ -102,7 +117,10 @@ Install to the standard SDDM location:
 Install with preset:
 
 ~~~bash
+./scripts/install.sh --preset default
 ./scripts/install.sh --preset night
+./scripts/install.sh --preset rain
+./scripts/install.sh --preset pixel
 ~~~
 
 Custom target path:
@@ -122,6 +140,29 @@ Custom target path:
 - `theme.conf` is the active runtime config.
 - `Preset=<name>` indicates the intended style preset.
 - `presets/*.conf` are complete config variants that can be applied via scripts.
+
+Primary V4 style keys:
+
+- `UiFont`
+- `ClockFont`
+- `AccentColor`
+- `SecondaryAccentColor`
+- `OverlayStrength`
+- `OverlayTint`
+- `PanelTint`
+- `PanelOpacity`
+- `PanelRadius`
+- `ControlDensity`
+- `ClockScale`
+- `TitleOpacity`
+- `SubtitleOpacity`
+- `BottomControlsOpacity`
+- `PanelHorizontalOffset`
+- `PanelVerticalOffset`
+- `SessionStyle`
+- `TransitionProfile`
+- `ControlSpacing`
+- `PanelBorderStrength`
 
 See:
 

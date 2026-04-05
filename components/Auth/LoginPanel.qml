@@ -15,6 +15,12 @@ Item {
     property string subtitleText: "Sign in to start session"
     property real panelOpacity: 0.24
     property int panelRadius: 14
+    property real controlDensity: 1.0
+    property real titleOpacity: 0.98
+    property real subtitleOpacity: 0.86
+    property int controlSpacing: 10
+    property real panelBorderStrength: 1.0
+    property string styleVariant: "balanced"
 
     signal loginRequested(string userName, string password)
 
@@ -29,32 +35,33 @@ Item {
 
     Rectangle {
         anchors.fill: panelColumn
-        anchors.margins: -20
+        anchors.margins: -Math.round(20 * root.controlDensity)
         radius: root.panelRadius
-        color: "#3c101a29"
+        color: palette ? palette.panelGlass : "#3c101a29"
         opacity: root.panelOpacity
-        border.width: 1
+        border.width: Math.max(1, Math.round(root.panelBorderStrength))
         border.color: palette ? palette.borderSubtle : "#2a3f5f"
     }
 
     Column {
         id: panelColumn
         width: root.width
-        spacing: 10
+        spacing: Math.round(root.controlSpacing)
 
         Text {
             text: root.titleText
             color: palette ? palette.textPrimary : "#d9e7ff"
-            font.pixelSize: 28
+            opacity: root.titleOpacity
+            font.pixelSize: Math.round(28 * root.controlDensity)
             font.family: root.fontFamily
-            font.letterSpacing: 1.0
+            font.letterSpacing: root.styleVariant === "pixel" ? 1.5 : 1.0
         }
 
         Text {
             text: root.subtitleText
             color: palette ? palette.textMuted : "#8ea5c7"
-            opacity: 0.9
-            font.pixelSize: 13
+            opacity: root.subtitleOpacity
+            font.pixelSize: Math.round(13 * root.controlDensity)
             font.family: root.fontFamily
         }
 
@@ -78,6 +85,10 @@ Item {
             colorAccent: palette ? palette.accent : "#4ea0ff"
             colorBorder: palette ? palette.borderSubtle : "#2a3f5f"
             fontFamily: root.fontFamily
+            controlDensity: root.controlDensity
+            cornerRadius: Math.max(4, root.panelRadius - 6)
+            styleVariant: root.styleVariant
+            panelBorderStrength: root.panelBorderStrength
             onAccepted: root.loginRequested(userDisplay.selectedUser, text)
         }
 
@@ -89,6 +100,10 @@ Item {
             colorText: palette ? palette.textPrimary : "#d9e7ff"
             colorAccent: palette ? palette.accent : "#4ea0ff"
             fontFamily: root.fontFamily
+            controlDensity: root.controlDensity
+            cornerRadius: Math.max(4, root.panelRadius - 4)
+            styleVariant: root.styleVariant
+            secondaryAccent: palette ? palette.accentSecondary : "#5f9edb"
             onClicked: root.loginRequested(userDisplay.selectedUser, passwordInput.text)
         }
 
