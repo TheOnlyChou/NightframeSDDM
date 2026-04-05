@@ -6,6 +6,7 @@ Rectangle {
     property string colorText: "#d9e7ff"
     property string colorAccent: "#4ea0ff"
     property string fontFamily: "Noto Sans"
+    readonly property bool focused: mouseArea.pressed
 
     signal clicked()
 
@@ -16,7 +17,7 @@ Rectangle {
            ? Qt.darker(colorAccent, 2.10)
            : (mouseArea.containsMouse ? Qt.darker(colorAccent, 1.85) : Qt.darker(colorAccent, 1.98))
     border.width: 1
-    border.color: mouseArea.containsMouse ? Qt.darker(colorAccent, 1.30) : Qt.darker(colorAccent, 1.45)
+    border.color: (mouseArea.containsMouse || focused) ? Qt.darker(colorAccent, 1.30) : Qt.darker(colorAccent, 1.45)
 
     Text {
         anchors.centerIn: parent
@@ -35,6 +36,12 @@ Rectangle {
     }
 
     Behavior on color {
+        ColorAnimation {
+            duration: 120
+        }
+    }
+
+    Behavior on border.color {
         ColorAnimation {
             duration: 120
         }

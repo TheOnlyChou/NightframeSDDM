@@ -16,7 +16,7 @@ Rectangle {
 
     Common.ThemeColors {
         id: palette
-        accentOverride: config.AccentColor || ""
+        accentOverride: root.accentHex
     }
 
     Common.ThemeMetrics {
@@ -25,21 +25,103 @@ Rectangle {
 
     Common.ThemeFonts {
         id: themeFonts
-        pixelFontPath: Qt.resolvedUrl(config.PixelFont || "")
+        pixelFontPath: Qt.resolvedUrl(root.pixelFontPath)
     }
+
+    property string activePreset: (config.Preset || "default").toString().toLowerCase()
+
+    function presetDefaults(presetName) {
+        var presets = {
+            "default": {
+                AccentColor: "#4ea0ff",
+                OverlayStrength: "0.46",
+                PanelOpacity: "0.24",
+                PanelRadius: "14",
+                ControlDensity: "1.00",
+                BackgroundMode: "image",
+                UseVideo: "false",
+                BackgroundImage: "assets/backgrounds/default.jpg",
+                BackgroundVideo: "assets/video/nightframe.mp4",
+                PixelFont: "assets/fonts/JetBrainsMono-Regular.ttf"
+            },
+            "night": {
+                AccentColor: "#5f9edb",
+                OverlayStrength: "0.50",
+                PanelOpacity: "0.28",
+                PanelRadius: "14",
+                ControlDensity: "1.00",
+                BackgroundMode: "image",
+                UseVideo: "false",
+                BackgroundImage: "assets/backgrounds/default.jpg",
+                BackgroundVideo: "assets/video/nightframe.mp4",
+                PixelFont: "assets/fonts/JetBrainsMono-Regular.ttf"
+            },
+            "pixel": {
+                AccentColor: "#75c6ff",
+                OverlayStrength: "0.44",
+                PanelOpacity: "0.23",
+                PanelRadius: "12",
+                ControlDensity: "0.98",
+                BackgroundMode: "image",
+                UseVideo: "false",
+                BackgroundImage: "assets/backgrounds/default.jpg",
+                BackgroundVideo: "assets/video/nightframe.mp4",
+                PixelFont: "assets/fonts/PressStart2P-Regular.ttf"
+            },
+            "rain": {
+                AccentColor: "#7ba9d6",
+                OverlayStrength: "0.52",
+                PanelOpacity: "0.30",
+                PanelRadius: "15",
+                ControlDensity: "1.02",
+                BackgroundMode: "image",
+                UseVideo: "false",
+                BackgroundImage: "assets/backgrounds/default.jpg",
+                BackgroundVideo: "assets/video/nightframe.mp4",
+                PixelFont: "assets/fonts/JetBrainsMono-Regular.ttf"
+            }
+        }
+        return presets[presetName] || presets.default
+    }
+
+    function configOrPreset(key, fallback) {
+        var directValue = config[key]
+        if (directValue !== undefined && directValue !== null && directValue.toString() !== "") {
+            return directValue.toString()
+        }
+        var fromPreset = presetDefaults(activePreset)[key]
+        if (fromPreset !== undefined && fromPreset !== null && fromPreset.toString() !== "") {
+            return fromPreset.toString()
+        }
+        return fallback
+    }
+
+    function configToBool(value, fallback) {
+        if (value === undefined || value === null) {
+            return fallback
+        }
+        if (typeof value === "boolean") {
+            return value
+        }
+        return value.toString().toLowerCase() === "true"
+    }
+
+    property string accentHex: configOrPreset("AccentColor", "#4ea0ff")
+    property string pixelFontPath: configOrPreset("PixelFont", "")
 
     property bool useVideoBackground: {
-        var mode = (config.BackgroundMode || "image").toString().toLowerCase()
+        var mode = configOrPreset("BackgroundMode", "image").toString().toLowerCase()
         var modeWantsVideo = mode === "video"
-        if (typeof config.UseVideo === "boolean") {
-            return config.UseVideo || modeWantsVideo
-        }
-        return (config.UseVideo || "false").toString().toLowerCase() === "true" || modeWantsVideo
+        var useVideoFlag = configToBool(configOrPreset("UseVideo", "false"), false)
+        return useVideoFlag || modeWantsVideo
     }
 
-    property url backgroundImagePath: Qt.resolvedUrl(config.BackgroundImage || "assets/backgrounds/default.jpg")
-    property url backgroundVideoPath: Qt.resolvedUrl(config.BackgroundVideo || "assets/video/nightframe.mp4")
-    property real overlayStrength: Number(config.OverlayStrength || 0.46)
+    property url backgroundImagePath: Qt.resolvedUrl(configOrPreset("BackgroundImage", "assets/backgrounds/default.jpg"))
+    property url backgroundVideoPath: Qt.resolvedUrl(configOrPreset("BackgroundVideo", "assets/video/nightframe.mp4"))
+    property real overlayStrength: Number(configOrPreset("OverlayStrength", "0.46"))
+    property real panelOpacity: Math.max(0.16, Math.min(0.42, Number(configOrPreset("PanelOpacity", "0.24"))))
+    property int panelRadius: Math.max(10, Number(configOrPreset("PanelRadius", "14")))
+    property real controlDensity: Math.max(0.92, Math.min(1.08, Number(configOrPreset("ControlDensity", "1.00"))))
     property bool use24hClock: {
         if (typeof config.Clock24h === "boolean") {
             return config.Clock24h
@@ -119,6 +201,8 @@ Rectangle {
         messageType: root.statusType
         palette: palette
         fontFamily: themeFonts.uiFamily
+        panelOpacity: root.panelOpacity
+        panelRadius: root.panelRadius
 
         onLoginRequested: function(userName, password) {
             root.statusText = "Authenticating..."
@@ -134,9 +218,10 @@ Rectangle {
 
     Rectangle {
         id: bottomRightControls
-        height: metrics.floatingControlsHeight
-        radius: metrics.floatingControlsRadius
+        height: metrics.floatingControlsHeight * root.controlDensity
+        radius: Math.max(metrics.floatingControlsRadius, root.panelRadius - 2)
         color: palette.panelGlassStrong
+        opacity: Math.min(1.0, root.panelOpacity + 0.72)
         border.width: 1
         border.color: palette.borderSubtle
         anchors.right: parent.right
@@ -158,13 +243,14 @@ Rectangle {
                 palette: palette
                 fontFamily: themeFonts.uiFamily
                 showBackground: false
+                cornerRadius: Math.max(8, root.panelRadius - 4)
             }
 
             Rectangle {
                 width: 1
                 height: parent.height - 8
                 anchors.verticalCenter: parent.verticalCenter
-                color: "#355174"
+                color: palette.separatorSoft
                 opacity: 0.45
             }
 
@@ -174,6 +260,7 @@ Rectangle {
                 palette: palette
                 fontFamily: themeFonts.uiFamily
                 showBackground: false
+                cornerRadius: Math.max(8, root.panelRadius - 4)
                 onRequestSuspend: {
                     if (typeof sddm !== "undefined" && sddm) {
                         sddm.suspend()

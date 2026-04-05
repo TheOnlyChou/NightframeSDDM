@@ -11,6 +11,8 @@ Thumbs.db
 
 # Logs and temporary files
 *.log
+*.bak
+*.tmp
 tmp/
 .temp/
 .cache/
@@ -30,6 +32,7 @@ cmake-build-*/
 
 # Test capture output (optional local previews)
 previews/
+.sddm-preview/
 *.mp4
 *.webm
 *.gif

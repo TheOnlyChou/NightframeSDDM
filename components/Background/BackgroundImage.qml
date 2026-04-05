@@ -6,6 +6,7 @@ Item {
     property url fallbackSource: "assets/backgrounds/default.jpg"
 
     readonly property url resolvedSource: source && source.toString().length > 0 ? source : fallbackSource
+    readonly property bool primaryFailed: bgImage.status === Image.Error
 
     Rectangle {
         anchors.fill: parent
@@ -27,7 +28,7 @@ Item {
         id: fallbackImage
         anchors.fill: parent
         source: root.fallbackSource
-        visible: bgImage.status === Image.Error && !!root.fallbackSource
+        visible: root.primaryFailed && !!root.fallbackSource
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         cache: true
@@ -37,7 +38,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        visible: bgImage.status === Image.Error && fallbackImage.status === Image.Error
+        visible: root.primaryFailed && fallbackImage.status === Image.Error
         color: "#020812"
     }
 }
