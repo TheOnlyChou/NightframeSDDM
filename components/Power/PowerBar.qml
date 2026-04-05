@@ -23,6 +23,16 @@ Item {
     width: Math.round((styleVariant === "pixel" ? 148 : 156) * controlDensity)
     height: Math.round(40 * controlDensity)
 
+    function buttonBackgroundColor(button, baseColor, hoverColor, pressedColor) {
+        if (button.down) {
+            return pressedColor
+        }
+        if (button.hovered || button.visualFocus) {
+            return hoverColor
+        }
+        return baseColor
+    }
+
     Rectangle {
         visible: root.showBackground
         anchors.fill: parent
@@ -47,18 +57,29 @@ Item {
             icon.source: root.sleepIconSource
             icon.width: 17
             icon.height: 17
-            icon.color: "#ffffff"
+            icon.color: sleepButton.down ? "#f1f6ff" : (sleepButton.hovered ? "#ffffff" : "#d6e3f5")
             onClicked: root.requestSuspend()
 
             background: Rectangle {
                 radius: Math.max(6, root.cornerRadius - 1)
-                color: sleepButton.down
-                       ? (root.styleVariant === "pixel" ? "#3f2f68" : "#344b68")
-                       : (sleepButton.hovered ? (root.styleVariant === "pixel" ? "#35295a" : "#2a3f5a") : "transparent")
+                color: root.buttonBackgroundColor(
+                           sleepButton,
+                           "transparent",
+                           palette ? palette.controlHover : (root.styleVariant === "pixel" ? "#35295a" : "#2a3f5a"),
+                           palette ? palette.controlPressed : (root.styleVariant === "pixel" ? "#3f2f68" : "#344b68")
+                       )
                 border.width: 1
                 border.color: (sleepButton.hovered || sleepButton.visualFocus)
                               ? (palette ? palette.accent : "#4ea0ff")
                               : (palette ? palette.borderSubtle : "#2a3f5f")
+
+                Behavior on color {
+                    ColorAnimation { duration: 110 }
+                }
+
+                Behavior on border.color {
+                    ColorAnimation { duration: 110 }
+                }
             }
         }
 
@@ -72,18 +93,29 @@ Item {
             icon.source: root.rebootIconSource
             icon.width: 17
             icon.height: 17
-            icon.color: "#ffffff"
+            icon.color: rebootButton.down ? "#f1f6ff" : (rebootButton.hovered ? "#ffffff" : "#d6e3f5")
             onClicked: root.requestReboot()
 
             background: Rectangle {
                 radius: Math.max(6, root.cornerRadius - 1)
-                color: rebootButton.down
-                       ? (root.styleVariant === "pixel" ? "#3f2f68" : "#344b68")
-                       : (rebootButton.hovered ? (root.styleVariant === "pixel" ? "#35295a" : "#2a3f5a") : "transparent")
+                color: root.buttonBackgroundColor(
+                           rebootButton,
+                           "transparent",
+                           palette ? palette.controlHover : (root.styleVariant === "pixel" ? "#35295a" : "#2a3f5a"),
+                           palette ? palette.controlPressed : (root.styleVariant === "pixel" ? "#3f2f68" : "#344b68")
+                       )
                 border.width: 1
                 border.color: (rebootButton.hovered || rebootButton.visualFocus)
                               ? (palette ? palette.accent : "#4ea0ff")
                               : (palette ? palette.borderSubtle : "#2a3f5f")
+
+                Behavior on color {
+                    ColorAnimation { duration: 110 }
+                }
+
+                Behavior on border.color {
+                    ColorAnimation { duration: 110 }
+                }
             }
         }
 
@@ -97,18 +129,29 @@ Item {
             icon.source: root.shutdownIconSource
             icon.width: 17
             icon.height: 17
-            icon.color: "#ffffff"
+            icon.color: shutdownButton.down ? "#ffeef3" : (shutdownButton.hovered ? "#fff6f8" : "#f2d9df")
             onClicked: root.requestShutdown()
 
             background: Rectangle {
                 radius: Math.max(6, root.cornerRadius - 1)
-                color: shutdownButton.down
-                       ? (root.styleVariant === "pixel" ? "#5b2d69" : "#4b3a50")
-                       : (shutdownButton.hovered ? (root.styleVariant === "pixel" ? "#4e295a" : "#3e3243") : "transparent")
+                color: root.buttonBackgroundColor(
+                           shutdownButton,
+                           "transparent",
+                           palette ? palette.controlDangerHover : (root.styleVariant === "pixel" ? "#4e295a" : "#3e3243"),
+                           palette ? palette.controlDangerPressed : (root.styleVariant === "pixel" ? "#5b2d69" : "#4b3a50")
+                       )
                 border.width: 1
                 border.color: (shutdownButton.hovered || shutdownButton.visualFocus)
-                              ? (palette ? palette.accent : "#4ea0ff")
+                              ? (palette ? palette.danger : "#ff6b86")
                               : (palette ? palette.borderSubtle : "#2a3f5f")
+
+                Behavior on color {
+                    ColorAnimation { duration: 110 }
+                }
+
+                Behavior on border.color {
+                    ColorAnimation { duration: 110 }
+                }
             }
         }
     }

@@ -13,6 +13,7 @@ Item {
     property string messageType: "info"
     property string titleText: "Welcome"
     property string subtitleText: "Sign in to start session"
+    property bool authenticating: false
     property real panelOpacity: 0.24
     property int panelRadius: 14
     property real controlDensity: 1.0
@@ -89,7 +90,12 @@ Item {
             cornerRadius: Math.max(4, root.panelRadius - 6)
             styleVariant: root.styleVariant
             panelBorderStrength: root.panelBorderStrength
-            onAccepted: root.loginRequested(userDisplay.selectedUser, text)
+            enabled: !root.authenticating
+            onAccepted: {
+                if (!root.authenticating) {
+                    root.loginRequested(userDisplay.selectedUser, text)
+                }
+            }
         }
 
         Item { width: 1; height: 2 }
@@ -104,7 +110,13 @@ Item {
             cornerRadius: Math.max(4, root.panelRadius - 4)
             styleVariant: root.styleVariant
             secondaryAccent: palette ? palette.accentSecondary : "#5f9edb"
-            onClicked: root.loginRequested(userDisplay.selectedUser, passwordInput.text)
+            busy: root.authenticating
+            enabled: !root.authenticating
+            onClicked: {
+                if (!root.authenticating) {
+                    root.loginRequested(userDisplay.selectedUser, passwordInput.text)
+                }
+            }
         }
 
         Loader {
