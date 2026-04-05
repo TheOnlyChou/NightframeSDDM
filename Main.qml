@@ -248,7 +248,6 @@ Rectangle {
     property int authAttemptCount: 0
     property string runtimeModeLabel: testMode ? "Preview mode (no PAM/fprintd)" : "SDDM runtime mode"
     property string authAttemptNote: ""
-    property bool passiveAuthEnabled: !testMode
 
     function beginAuthenticationAttempt(userName, password) {
         if (root.authenticating) {
@@ -545,13 +544,6 @@ Rectangle {
 
         onLoginRequested: function(userName, password) {
             root.beginAuthenticationAttempt(userName, password)
-        }
-
-        onPassiveAuthRequested: function(userName) {
-            if (!root.passiveAuthEnabled) {
-                return
-            }
-            root.beginAuthenticationAttempt(userName, "")
         }
     }
 
