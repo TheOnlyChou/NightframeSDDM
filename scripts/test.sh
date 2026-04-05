@@ -3,15 +3,17 @@ set -euo pipefail
 
 THEME_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PRESET=""
+DEBUG_AUTH="${NIGHTFRAME_DEBUG_AUTH:-0}"
 
 usage() {
     cat <<'EOF'
-Usage: ./scripts/test.sh [--preset <name>] [--list-presets]
+Usage: ./scripts/test.sh [--preset <name>] [--list-presets] [--debug-auth]
 
 Examples:
   ./scripts/test.sh
     ./scripts/test.sh --preset default
     ./scripts/test.sh --preset pixel
+    ./scripts/test.sh --preset default --debug-auth
 EOF
 }
 
@@ -32,6 +34,10 @@ while [[ $# -gt 0 ]]; do
                 find "${THEME_DIR}/presets" -maxdepth 1 -type f -name '*.conf' -printf '%f\n' | sed 's/\.conf$//' | sort
             fi
             exit 0
+            ;;
+        --debug-auth)
+            DEBUG_AUTH="1"
+            shift
             ;;
         -h|--help)
             usage
@@ -91,6 +97,14 @@ if [[ -n "${PRESET}" ]]; then
     cp "${preset_file}" "${tmp_theme_dir}/theme.conf"
 fi
 
+if [[ "${DEBUG_AUTH}" == "1" ]]; then
+    if grep -qE '^DebugAuthFlow=' "${tmp_theme_dir}/theme.conf"; then
+        sed -i 's/^DebugAuthFlow=.*/DebugAuthFlow=true/' "${tmp_theme_dir}/theme.conf"
+    else
+        printf '\nDebugAuthFlow=true\n' >> "${tmp_theme_dir}/theme.conf"
+    fi
+fi
+
 resolved_mode="$(config_value "BackgroundMode" "${tmp_theme_dir}/theme.conf" | tr '[:upper:]' '[:lower:]')"
 resolved_use_video="$(config_value "UseVideo" "${tmp_theme_dir}/theme.conf" | tr '[:upper:]' '[:lower:]')"
 resolved_mode="${resolved_mode:-image}"
@@ -120,4 +134,8 @@ if [[ "${video_enabled}" == "true" ]]; then
     effective_mode="video"
 fi
 echo "Running theme preview from: ${THEME_DIR} (mode=${effective_mode}, preset=${active_preset})"
+if [[ "${DEBUG_AUTH}" == "1" ]]; then
+    echo "Auth debug overlay: enabled"
+fi
+echo "Note: sddm-greeter --test-mode previews QML only and does not execute real PAM/fprintd authentication."
 "${GREETER_BIN}" --test-mode --theme "${tmp_theme_dir}"

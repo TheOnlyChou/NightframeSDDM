@@ -1,15 +1,18 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQml 2.15
 
 Item {
     id: root
 
     property var sessionModelRef: null
+    property bool allowDemoFallback: false
     property var palette: null
     property string fontFamily: "Noto Sans"
     property int currentIndex: 0
     property string demoSessionName: "Hyprland"
     property var demoSessionList: ["Hyprland", "GNOME", "Plasma"]
+    property string emptySessionLabel: "No session"
     property bool showBackground: true
     property int cornerRadius: 8
     property real controlDensity: 1.0
@@ -18,6 +21,20 @@ Item {
 
     readonly property bool hovered: hoverArea.containsMouse
     readonly property bool menuOpen: sessionPopup.visible
+    readonly property bool hasRealSessionModel: modelCount() > 0
+    readonly property bool usingDemoFallback: !hasRealSessionModel && allowDemoFallback
+    readonly property int selectedSessionIndex: hasRealSessionModel ? Math.max(0, Math.min(currentIndex, modelCount() - 1)) : -1
+    readonly property string selectedSessionName: sessionNameAt(currentIndex)
+    readonly property var loginSessionValue: {
+        if (hasRealSessionModel) {
+            // SDDM login accepts session index reliably across greeter/session model variants.
+            return selectedSessionIndex
+        }
+        if (usingDemoFallback) {
+            return selectedSessionName
+        }
+        return ""
+    }
 
     width: Math.round((styleVariant === "pixel" ? 236 : 250) * controlDensity)
     height: Math.round(40 * controlDensity)
@@ -26,24 +43,64 @@ Item {
         return sessionModelRef && sessionModelRef.count ? sessionModelRef.count : 0
     }
 
-    function modelSessionNameAt(index) {
-        if (!sessionModelRef || typeof sessionModelRef.get !== "function" || index < 0 || index >= modelCount()) {
+    function roleValue(modelObj, roleName) {
+        if (!modelObj || !roleName || modelObj[roleName] === undefined || modelObj[roleName] === null) {
             return ""
         }
-        var s = sessionModelRef.get(index)
-        return s && s.name ? s.name.toString() : ""
+        var roleText = modelObj[roleName].toString().trim()
+        return roleText.length > 0 ? roleText : ""
     }
 
-    function modelHasUsableNames() {
-        if (!sessionModelRef || typeof sessionModelRef.get !== "function" || modelCount() <= 0) {
-            return false
-        }
-        for (var i = 0; i < modelCount(); i++) {
-            if (modelSessionNameAt(i).trim().length > 0) {
-                return true
+    function resolveSessionIdentifier(modelObj, modelDataValue, fallbackName) {
+        var candidates = [
+            roleValue(modelObj, "key"),
+            roleValue(modelObj, "id"),
+            roleValue(modelObj, "desktopFile"),
+            roleValue(modelObj, "fileName"),
+            roleValue(modelObj, "exec"),
+            roleValue(modelObj, "name"),
+            (modelDataValue !== undefined && modelDataValue !== null) ? modelDataValue.toString().trim() : "",
+            (fallbackName !== undefined && fallbackName !== null) ? fallbackName.toString().trim() : ""
+        ]
+        for (var i = 0; i < candidates.length; i++) {
+            var value = candidates[i]
+            if (value.length > 0) {
+                return value
             }
         }
-        return false
+        return ""
+    }
+
+    function resolveSessionName(modelObj, modelDataValue) {
+        var candidates = [
+            roleValue(modelObj, "name"),
+            roleValue(modelObj, "display"),
+            roleValue(modelObj, "displayName"),
+            roleValue(modelObj, "label"),
+            roleValue(modelObj, "id"),
+            roleValue(modelObj, "key"),
+            (modelDataValue !== undefined && modelDataValue !== null) ? modelDataValue.toString().trim() : ""
+        ]
+        for (var i = 0; i < candidates.length; i++) {
+            if (candidates[i].length > 0) {
+                return candidates[i]
+            }
+        }
+        return ""
+    }
+
+    function modelEntryAt(index) {
+        if (!hasRealSessionModel || index < 0 || index >= modelCount()) {
+            return null
+        }
+        var obj = sessionEntries.objectAt(index)
+        if (!obj) {
+            return null
+        }
+        return {
+            name: obj.sessionName,
+            identifier: obj.sessionIdentifier
+        }
     }
 
     function effectiveDemoList() {
@@ -54,29 +111,103 @@ Item {
     }
 
     function sessionCount() {
-        if (modelHasUsableNames()) {
+        if (hasRealSessionModel) {
             return modelCount()
         }
-        return effectiveDemoList().length
+        if (usingDemoFallback) {
+            return effectiveDemoList().length
+        }
+        return 0
     }
 
     function sessionNameAt(index) {
         if (index < 0 || index >= sessionCount()) {
-            return demoSessionName
+            return emptySessionLabel
         }
-        if (modelHasUsableNames()) {
-            var modelName = modelSessionNameAt(index)
-            if (modelName.trim().length > 0) {
-                return modelName
+        if (hasRealSessionModel) {
+            var entry = modelEntryAt(index)
+            if (entry && entry.name.length > 0) {
+                return entry.name
             }
+            return emptySessionLabel
         }
         var demoList = effectiveDemoList()
-        return demoList[index] || demoSessionName
+        return demoList[index] || emptySessionLabel
+    }
+
+    function modelPreferredIndex() {
+        if (!hasRealSessionModel) {
+            return 0
+        }
+        var candidates = [
+            sessionModelRef.currentIndex,
+            sessionModelRef.lastIndex,
+            sessionModelRef.index,
+            sessionModelRef.defaultIndex
+        ]
+        for (var i = 0; i < candidates.length; i++) {
+            var idx = Number(candidates[i])
+            if (!isNaN(idx) && idx >= 0 && idx < modelCount()) {
+                return Math.floor(idx)
+            }
+        }
+        return 0
+    }
+
+    function setCurrentIndexFromUI(index) {
+        if (sessionCount() <= 0) {
+            currentIndex = 0
+            return
+        }
+
+        var clamped = Math.max(0, Math.min(index, sessionCount() - 1))
+        currentIndex = clamped
+
+        if (hasRealSessionModel) {
+            if (typeof sessionModelRef.setCurrentIndex === "function") {
+                sessionModelRef.setCurrentIndex(clamped)
+            } else if (sessionModelRef.currentIndex !== undefined) {
+                sessionModelRef.currentIndex = clamped
+            } else if (sessionModelRef.index !== undefined) {
+                sessionModelRef.index = clamped
+            }
+        }
+    }
+
+    function syncSelectionFromModel(preferModelIndex) {
+        if (hasRealSessionModel) {
+            var target = preferModelIndex ? modelPreferredIndex() : currentIndex
+            currentIndex = Math.max(0, Math.min(target, modelCount() - 1))
+            return
+        }
+        if (usingDemoFallback) {
+            currentIndex = Math.max(0, Math.min(currentIndex, sessionCount() - 1))
+            return
+        }
+        currentIndex = 0
     }
 
     Component.onCompleted: {
-        if (sessionCount() > 0) {
-            currentIndex = Math.max(0, Math.min(currentIndex, sessionCount() - 1))
+        syncSelectionFromModel(true)
+    }
+
+    onSessionModelRefChanged: syncSelectionFromModel(true)
+    onAllowDemoFallbackChanged: syncSelectionFromModel(true)
+
+    Connections {
+        target: root.sessionModelRef
+        ignoreUnknownSignals: true
+
+        function onCountChanged() {
+            root.syncSelectionFromModel(true)
+        }
+
+        function onCurrentIndexChanged() {
+            root.syncSelectionFromModel(true)
+        }
+
+        function onLastIndexChanged() {
+            root.syncSelectionFromModel(true)
         }
     }
 
@@ -115,7 +246,7 @@ Item {
         Text {
             width: parent.width - 25
             height: parent.height
-            text: root.sessionNameAt(root.currentIndex)
+            text: root.sessionCount() > 0 ? root.sessionNameAt(root.currentIndex) : root.emptySessionLabel
             color: palette ? palette.textPrimary : "#d9e7ff"
             font.family: root.fontFamily
             font.pixelSize: Math.round(14 * root.controlDensity)
@@ -154,6 +285,18 @@ Item {
         }
     }
 
+    Instantiator {
+        id: sessionEntries
+        model: root.hasRealSessionModel ? root.sessionModelRef : null
+        delegate: QtObject {
+            required property var model
+            required property var modelData
+
+            readonly property string sessionName: root.resolveSessionName(model, modelData)
+            readonly property string sessionIdentifier: root.resolveSessionIdentifier(model, modelData, sessionName)
+        }
+    }
+
     Popup {
         id: sessionPopup
         x: root.x
@@ -176,7 +319,7 @@ Item {
             id: sessionListView
             anchors.fill: parent
             clip: true
-            model: root.sessionCount()
+            model: root.hasRealSessionModel ? root.sessionModelRef : (root.usingDemoFallback ? root.effectiveDemoList() : [])
             boundsBehavior: Flickable.StopAtBounds
             currentIndex: root.currentIndex
 
@@ -197,7 +340,9 @@ Item {
                     anchors.leftMargin: Math.round(10 * root.controlDensity)
                     anchors.right: parent.right
                     anchors.rightMargin: Math.round(10 * root.controlDensity)
-                    text: root.sessionNameAt(index)
+                    text: root.hasRealSessionModel
+                          ? root.resolveSessionName(model, modelData)
+                          : (modelData !== undefined && modelData !== null ? modelData.toString() : root.emptySessionLabel)
                     color: palette ? palette.textPrimary : "#d9e7ff"
                     font.family: root.fontFamily
                     font.pixelSize: Math.round(13 * root.controlDensity)
@@ -209,7 +354,7 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     onClicked: {
-                        root.currentIndex = index
+                        root.setCurrentIndexFromUI(index)
                         sessionPopup.close()
                     }
                 }

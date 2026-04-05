@@ -243,6 +243,58 @@ Rectangle {
     property string statusType: "info"
     property bool authenticating: false
     property bool videoPlaybackFailed: false
+    property bool testMode: typeof sddm === "undefined" || !sddm
+    property bool authDebugEnabled: testMode || configToBool(configOrPreset("DebugAuthFlow", "false"), false)
+    property int authAttemptCount: 0
+    property string runtimeModeLabel: testMode ? "Preview mode (no PAM/fprintd)" : "SDDM runtime mode"
+    property string authAttemptNote: ""
+
+    function beginAuthenticationAttempt(userName, password) {
+        if (root.authenticating) {
+            return
+        }
+
+        var normalizedUser = userName ? userName.toString().trim() : ""
+        if (normalizedUser.length === 0) {
+            root.statusText = "Select a user to authenticate"
+            root.statusType = "info"
+            return
+        }
+
+        root.authenticating = true
+        root.authAttemptCount = root.authAttemptCount + 1
+        root.authAttemptNote = "Authentication attempt #" + root.authAttemptCount
+
+        if (root.testMode) {
+            root.statusText = "Preview mode only: login UI event triggered, but PAM/fprintd is not executed in --test-mode"
+            root.statusType = "info"
+            previewAuthTimer.restart()
+            return
+        }
+
+        if (root.authDebugEnabled) {
+            root.statusText = "Authentication requested via SDDM"
+            root.statusType = "info"
+        } else {
+            root.statusText = ""
+            root.statusType = "info"
+        }
+
+        sddm.login(normalizedUser, password, sessionBar.loginSessionValue)
+    }
+
+    Timer {
+        id: previewAuthTimer
+        interval: 1200
+        repeat: false
+        onTriggered: {
+            root.authenticating = false
+            root.statusText = "Preview mode limitation: test with installed SDDM greeter for real password/fingerprint PAM authentication"
+            root.statusType = "info"
+            loginPanel.clearPassword()
+        }
+    }
+
     property var keyboardLayoutModelRef: {
         if (typeof keyboardLayoutModel !== "undefined") {
             return keyboardLayoutModel
@@ -422,6 +474,32 @@ Rectangle {
         }
     }
 
+    Rectangle {
+        id: runtimeBadge
+        visible: root.authDebugEnabled
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.topMargin: metrics.edgeMargin
+        anchors.rightMargin: metrics.edgeMargin
+        width: runtimeBadgeText.implicitWidth + Math.round(18 * root.controlDensity)
+        height: Math.round(28 * root.controlDensity)
+        radius: Math.max(6, Math.round(root.panelRadius * 0.6))
+        color: palette.panelGlassStrong
+        opacity: 0.92
+        border.width: 1
+        border.color: root.testMode ? "#d89a4d" : palette.borderSubtle
+
+        Text {
+            id: runtimeBadgeText
+            anchors.centerIn: parent
+            text: root.runtimeModeLabel
+            color: root.testMode ? "#ffd9a6" : palette.textMuted
+            font.family: themeFonts.uiFamily
+            font.pixelSize: Math.round(11 * root.controlDensity)
+            font.bold: root.testMode
+        }
+    }
+
     Auth.LoginPanel {
         id: loginPanel
         opacity: 0.0
@@ -435,6 +513,9 @@ Rectangle {
         messageText: root.statusText
         messageType: root.statusType
         authenticating: root.authenticating
+        showDebugInfo: root.authDebugEnabled
+        runtimeModeText: root.runtimeModeLabel
+        authStateText: root.authAttemptNote
         palette: palette
         fontFamily: themeFonts.uiFamily
         panelOpacity: root.panelOpacity
@@ -462,16 +543,7 @@ Rectangle {
         }
 
         onLoginRequested: function(userName, password) {
-            root.authenticating = true
-            root.statusText = ""
-            root.statusType = "info"
-            if (typeof sddm !== "undefined" && sddm) {
-                sddm.login(userName, password, sessionBar.currentIndex)
-            } else {
-                root.authenticating = false
-                root.statusText = "Test mode: login action"
-                root.statusType = "info"
-            }
+            root.beginAuthenticationAttempt(userName, password)
         }
     }
 
@@ -515,6 +587,7 @@ Rectangle {
                 id: sessionBar
                 height: parent.height
                 sessionModelRef: typeof sessionModel !== "undefined" ? sessionModel : null
+                allowDemoFallback: root.testMode
                 palette: palette
                 fontFamily: themeFonts.uiFamily
                 showBackground: false
@@ -700,12 +773,14 @@ Rectangle {
         target: typeof sddm !== "undefined" ? sddm : null
 
         function onLoginSucceeded() {
+            previewAuthTimer.stop()
             root.authenticating = false
-            root.statusText = ""
+            root.statusText = root.authDebugEnabled ? "Authentication succeeded" : ""
             root.statusType = "info"
         }
 
         function onLoginFailed() {
+            previewAuthTimer.stop()
             root.authenticating = false
             root.statusText = "Invalid credentials"
             root.statusType = "error"
@@ -713,6 +788,7 @@ Rectangle {
         }
 
         function onInformationMessage(message) {
+            previewAuthTimer.stop()
             root.authenticating = false
             root.statusText = message
             root.statusType = "info"
