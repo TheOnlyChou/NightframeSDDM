@@ -17,6 +17,9 @@ Rectangle {
     Common.ThemeColors {
         id: palette
         accentOverride: root.accentHex
+        secondaryAccentOverride: root.secondaryAccentHex
+        overlayTintOverride: root.overlayTintHex
+        panelTintOverride: root.panelTintHex
     }
 
     Common.ThemeMetrics {
@@ -25,6 +28,8 @@ Rectangle {
 
     Common.ThemeFonts {
         id: themeFonts
+        uiFontPath: Qt.resolvedUrl(root.uiFontPath)
+        clockFontPath: Qt.resolvedUrl(root.clockFontPath)
         pixelFontPath: Qt.resolvedUrl(root.pixelFontPath)
     }
 
@@ -33,52 +38,112 @@ Rectangle {
     function presetDefaults(presetName) {
         var presets = {
             "default": {
-                AccentColor: "#4ea0ff",
-                OverlayStrength: "0.46",
-                PanelOpacity: "0.24",
+                AccentColor: "#56d4e2",
+                SecondaryAccentColor: "#7ebfff",
+                OverlayStrength: "0.40",
+                OverlayTint: "#081b2d",
+                PanelTint: "#101a2a",
+                PanelOpacity: "0.23",
                 PanelRadius: "14",
                 ControlDensity: "1.00",
+                ClockScale: "1.00",
+                TitleOpacity: "0.98",
+                SubtitleOpacity: "0.86",
+                BottomControlsOpacity: "0.94",
+                PanelHorizontalOffset: "0",
+                PanelVerticalOffset: "0",
+                SessionStyle: "balanced",
+                TransitionProfile: "default",
+                ControlSpacing: "10",
+                PanelBorderStrength: "1.00",
                 BackgroundMode: "image",
                 UseVideo: "false",
                 BackgroundImage: "assets/backgrounds/default.jpg",
-                BackgroundVideo: "assets/video/nightframe.mp4",
-                PixelFont: "assets/fonts/JetBrainsMono-Regular.ttf"
+                BackgroundVideo: "assets/video/pixel.mp4",
+                UiFont: "assets/fonts/Poppins-Regular.ttf",
+                ClockFont: "assets/fonts/JetBrainsMono-Regular.ttf",
+                PixelFont: ""
             },
             "night": {
-                AccentColor: "#5f9edb",
-                OverlayStrength: "0.50",
-                PanelOpacity: "0.28",
-                PanelRadius: "14",
-                ControlDensity: "1.00",
+                AccentColor: "#78b8ff",
+                SecondaryAccentColor: "#5f9edb",
+                OverlayStrength: "0.56",
+                OverlayTint: "#030a1f",
+                PanelTint: "#0a1220",
+                PanelOpacity: "0.29",
+                PanelRadius: "10",
+                ControlDensity: "0.94",
+                ClockScale: "0.96",
+                TitleOpacity: "0.95",
+                SubtitleOpacity: "0.72",
+                BottomControlsOpacity: "0.88",
+                PanelHorizontalOffset: "36",
+                PanelVerticalOffset: "-14",
+                SessionStyle: "minimal",
+                TransitionProfile: "night",
+                ControlSpacing: "8",
+                PanelBorderStrength: "1.20",
                 BackgroundMode: "image",
                 UseVideo: "false",
-                BackgroundImage: "assets/backgrounds/default.jpg",
-                BackgroundVideo: "assets/video/nightframe.mp4",
-                PixelFont: "assets/fonts/JetBrainsMono-Regular.ttf"
+                BackgroundImage: "assets/backgrounds/night.jpg",
+                BackgroundVideo: "assets/video/pixel.mp4",
+                UiFont: "assets/fonts/SpaceGrotesk-Regular.ttf",
+                ClockFont: "assets/fonts/JetBrainsMono-Regular.ttf",
+                PixelFont: ""
             },
             "pixel": {
-                AccentColor: "#75c6ff",
-                OverlayStrength: "0.44",
-                PanelOpacity: "0.23",
-                PanelRadius: "12",
-                ControlDensity: "0.98",
-                BackgroundMode: "image",
-                UseVideo: "false",
-                BackgroundImage: "assets/backgrounds/default.jpg",
-                BackgroundVideo: "assets/video/nightframe.mp4",
+                AccentColor: "#5cf2ff",
+                SecondaryAccentColor: "#ff4fd8",
+                OverlayStrength: "0.36",
+                OverlayTint: "#150a27",
+                PanelTint: "#170c2c",
+                PanelOpacity: "0.22",
+                PanelRadius: "6",
+                ControlDensity: "0.90",
+                ClockScale: "0.72",
+                TitleOpacity: "1.00",
+                SubtitleOpacity: "0.78",
+                BottomControlsOpacity: "1.00",
+                PanelHorizontalOffset: "26",
+                PanelVerticalOffset: "-8",
+                SessionStyle: "pixel",
+                TransitionProfile: "pixel",
+                ControlSpacing: "6",
+                PanelBorderStrength: "1.35",
+                BackgroundMode: "video",
+                UseVideo: "true",
+                BackgroundImage: "assets/backgrounds/night.jpg",
+                BackgroundVideo: "assets/video/pixel.mp4",
+                UiFont: "assets/fonts/Poppins-Regular.ttf",
+                ClockFont: "assets/fonts/PressStart2P-Regular.ttf",
                 PixelFont: "assets/fonts/PressStart2P-Regular.ttf"
             },
             "rain": {
-                AccentColor: "#7ba9d6",
-                OverlayStrength: "0.52",
-                PanelOpacity: "0.30",
-                PanelRadius: "15",
-                ControlDensity: "1.02",
+                AccentColor: "#9bbad0",
+                SecondaryAccentColor: "#8ba8c1",
+                OverlayStrength: "0.58",
+                OverlayTint: "#121b28",
+                PanelTint: "#1b2532",
+                PanelOpacity: "0.34",
+                PanelRadius: "20",
+                ControlDensity: "1.06",
+                ClockScale: "0.94",
+                TitleOpacity: "0.92",
+                SubtitleOpacity: "0.82",
+                BottomControlsOpacity: "0.90",
+                PanelHorizontalOffset: "18",
+                PanelVerticalOffset: "10",
+                SessionStyle: "soft",
+                TransitionProfile: "rain",
+                ControlSpacing: "12",
+                PanelBorderStrength: "0.82",
                 BackgroundMode: "image",
                 UseVideo: "false",
-                BackgroundImage: "assets/backgrounds/default.jpg",
-                BackgroundVideo: "assets/video/nightframe.mp4",
-                PixelFont: "assets/fonts/JetBrainsMono-Regular.ttf"
+                BackgroundImage: "assets/backgrounds/rain.jpg",
+                BackgroundVideo: "assets/video/pixel.mp4",
+                UiFont: "assets/fonts/IBMPlexSans-Regular.ttf",
+                ClockFont: "assets/fonts/JetBrainsMono-Regular.ttf",
+                PixelFont: ""
             }
         }
         return presets[presetName] || presets.default
@@ -106,7 +171,18 @@ Rectangle {
         return value.toString().toLowerCase() === "true"
     }
 
+    function configToNumber(value, fallback) {
+        var n = Number(value)
+        return isNaN(n) ? fallback : n
+    }
+
     property string accentHex: configOrPreset("AccentColor", "#4ea0ff")
+    property string secondaryAccentHex: configOrPreset("SecondaryAccentColor", "#5f9edb")
+    property string overlayTintHex: configOrPreset("OverlayTint", "#000000")
+    property string panelTintHex: configOrPreset("PanelTint", "#121f33")
+
+    property string uiFontPath: configOrPreset("UiFont", "")
+    property string clockFontPath: configOrPreset("ClockFont", configOrPreset("PixelFont", ""))
     property string pixelFontPath: configOrPreset("PixelFont", "")
 
     property bool useVideoBackground: {
@@ -117,11 +193,45 @@ Rectangle {
     }
 
     property url backgroundImagePath: Qt.resolvedUrl(configOrPreset("BackgroundImage", "assets/backgrounds/default.jpg"))
-    property url backgroundVideoPath: Qt.resolvedUrl(configOrPreset("BackgroundVideo", "assets/video/nightframe.mp4"))
-    property real overlayStrength: Number(configOrPreset("OverlayStrength", "0.46"))
-    property real panelOpacity: Math.max(0.16, Math.min(0.42, Number(configOrPreset("PanelOpacity", "0.24"))))
-    property int panelRadius: Math.max(10, Number(configOrPreset("PanelRadius", "14")))
-    property real controlDensity: Math.max(0.92, Math.min(1.08, Number(configOrPreset("ControlDensity", "1.00"))))
+    property url backgroundVideoPath: Qt.resolvedUrl(configOrPreset("BackgroundVideo", "assets/video/pixel.mp4"))
+    property real overlayStrength: Math.max(0.20, Math.min(0.70, configToNumber(configOrPreset("OverlayStrength", "0.46"), 0.46)))
+    property real panelOpacity: Math.max(0.16, Math.min(0.46, configToNumber(configOrPreset("PanelOpacity", "0.24"), 0.24)))
+    property int panelRadius: Math.max(4, configToNumber(configOrPreset("PanelRadius", "14"), 14))
+    property real controlDensity: Math.max(0.84, Math.min(1.16, configToNumber(configOrPreset("ControlDensity", "1.00"), 1.0)))
+    property real clockScale: Math.max(0.68, Math.min(1.15, configToNumber(configOrPreset("ClockScale", "1.00"), 1.0)))
+    property real titleOpacity: Math.max(0.65, Math.min(1.0, configToNumber(configOrPreset("TitleOpacity", "0.96"), 0.96)))
+    property real subtitleOpacity: Math.max(0.55, Math.min(1.0, configToNumber(configOrPreset("SubtitleOpacity", "0.82"), 0.82)))
+    property real bottomControlsOpacity: Math.max(0.72, Math.min(1.0, configToNumber(configOrPreset("BottomControlsOpacity", "0.92"), 0.92)))
+    property int panelHorizontalOffset: configToNumber(configOrPreset("PanelHorizontalOffset", "0"), 0)
+    property int panelVerticalOffset: configToNumber(configOrPreset("PanelVerticalOffset", "0"), 0)
+    property string sessionStyle: configOrPreset("SessionStyle", "balanced").toString().toLowerCase()
+    property int controlSpacing: Math.max(4, configToNumber(configOrPreset("ControlSpacing", "10"), 10))
+    property real panelBorderStrength: Math.max(0.7, Math.min(1.4, configToNumber(configOrPreset("PanelBorderStrength", "1.0"), 1.0)))
+    property string transitionProfile: configOrPreset("TransitionProfile", activePreset).toString().toLowerCase()
+    property int introDuration: {
+        if (transitionProfile === "night") {
+            return 620
+        }
+        if (transitionProfile === "rain") {
+            return 700
+        }
+        if (transitionProfile === "pixel") {
+            return 380
+        }
+        return 480
+    }
+    property int introGap: {
+        if (transitionProfile === "night") {
+            return 120
+        }
+        if (transitionProfile === "rain") {
+            return 130
+        }
+        if (transitionProfile === "pixel") {
+            return 70
+        }
+        return 95
+    }
     property bool use24hClock: {
         if (typeof config.Clock24h === "boolean") {
             return config.Clock24h
@@ -166,34 +276,100 @@ Rectangle {
     Background.OverlayLayer {
         anchors.fill: parent
         overlayOpacity: Math.max(0.12, Math.min(0.55, root.overlayStrength))
+        overlayColor: palette.overlayTint
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        visible: root.sessionStyle === "night"
+        color: palette.accent
+        opacity: 0.035
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: Qt.rgba(palette.accent.r, palette.accent.g, palette.accent.b, 0.28) }
+            GradientStop { position: 0.45; color: Qt.rgba(palette.accent.r, palette.accent.g, palette.accent.b, 0.06) }
+            GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.0) }
+        }
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        visible: root.sessionStyle === "soft"
+        color: "#dce6f2"
+        opacity: 0.032
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: Qt.rgba(0.88, 0.91, 0.95, 0.18) }
+            GradientStop { position: 0.4; color: Qt.rgba(0.76, 0.82, 0.88, 0.10) }
+            GradientStop { position: 1.0; color: Qt.rgba(0.0, 0.0, 0.0, 0.0) }
+        }
+    }
+
+    Item {
+        id: pixelScanlines
+        anchors.fill: parent
+        visible: root.sessionStyle === "pixel"
+        opacity: 0.055
+
+        Repeater {
+            model: Math.ceil(pixelScanlines.height / 4)
+
+            Rectangle {
+                x: 0
+                y: index * 4
+                width: pixelScanlines.width
+                height: 1
+                color: index % 2 === 0 ? "#7befff" : "#ff67dd"
+                opacity: index % 2 === 0 ? 0.12 : 0.09
+            }
+        }
     }
 
     Column {
         id: topLeftInfo
         spacing: 8
+        opacity: 0.0
         anchors.left: parent.left
         anchors.top: parent.top
         anchors.leftMargin: metrics.edgeMargin
         anchors.topMargin: metrics.edgeMargin
+
+        SequentialAnimation on opacity {
+            running: true
+            loops: 1
+
+            PauseAnimation {
+                duration: 40
+            }
+
+            NumberAnimation {
+                to: 1.0
+                duration: root.introDuration
+                easing.type: transitionProfile === "pixel" ? Easing.OutQuad : Easing.OutCubic
+            }
+        }
 
         Widgets.ClockBlock {
             id: clockBlock
             use24h: root.use24hClock
             fontFamily: themeFonts.clockFamily
             textColor: palette.textPrimary
+            scaleFactor: root.clockScale
+            styleVariant: root.sessionStyle
         }
 
         Widgets.DateBlock {
             textColor: palette.textMuted
             fontFamily: themeFonts.uiFamily
+            textOpacity: root.subtitleOpacity
         }
     }
 
     Auth.LoginPanel {
         id: loginPanel
+        opacity: 0.0
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin: metrics.leftPanelMargin
+        anchors.leftMargin: metrics.leftPanelMargin + root.panelHorizontalOffset
+        anchors.verticalCenterOffset: root.panelVerticalOffset
         width: Math.min(metrics.loginPanelMaxWidth, parent.width * 0.34)
 
         userModelRef: typeof userModel !== "undefined" ? userModel : null
@@ -203,6 +379,27 @@ Rectangle {
         fontFamily: themeFonts.uiFamily
         panelOpacity: root.panelOpacity
         panelRadius: root.panelRadius
+        controlDensity: root.controlDensity
+        titleOpacity: root.titleOpacity
+        subtitleOpacity: root.subtitleOpacity
+        controlSpacing: root.controlSpacing
+        panelBorderStrength: root.panelBorderStrength
+        styleVariant: root.sessionStyle
+
+        SequentialAnimation on opacity {
+            running: true
+            loops: 1
+
+            PauseAnimation {
+                duration: 40 + root.introGap
+            }
+
+            NumberAnimation {
+                to: 1.0
+                duration: root.introDuration
+                easing.type: transitionProfile === "pixel" ? Easing.OutQuad : Easing.OutCubic
+            }
+        }
 
         onLoginRequested: function(userName, password) {
             root.statusText = "Authenticating..."
@@ -218,11 +415,12 @@ Rectangle {
 
     Rectangle {
         id: bottomRightControls
-        height: metrics.floatingControlsHeight * root.controlDensity
-        radius: Math.max(metrics.floatingControlsRadius, root.panelRadius - 2)
+        opacity: 0.0
+        height: Math.round(metrics.floatingControlsHeight * root.controlDensity)
+        radius: Math.max(4, root.panelRadius - 2)
         color: palette.panelGlassStrong
-        opacity: Math.min(1.0, root.panelOpacity + 0.72)
-        border.width: 1
+        readonly property real targetOpacity: root.bottomControlsOpacity
+        border.width: Math.max(1, Math.round(root.panelBorderStrength))
         border.color: palette.borderSubtle
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -230,11 +428,26 @@ Rectangle {
         anchors.bottomMargin: metrics.edgeMargin
         width: controlsRow.implicitWidth + metrics.floatingControlsPadding * 2
 
+        SequentialAnimation on opacity {
+            running: true
+            loops: 1
+
+            PauseAnimation {
+                duration: 40 + (root.introGap * 2)
+            }
+
+            NumberAnimation {
+                to: bottomRightControls.targetOpacity
+                duration: root.introDuration
+                easing.type: transitionProfile === "pixel" ? Easing.OutQuad : Easing.OutCubic
+            }
+        }
+
         Row {
             id: controlsRow
             anchors.fill: parent
             anchors.margins: metrics.floatingControlsPadding
-            spacing: 10
+            spacing: root.controlSpacing
 
             Session.SessionBar {
                 id: sessionBar
@@ -244,6 +457,9 @@ Rectangle {
                 fontFamily: themeFonts.uiFamily
                 showBackground: false
                 cornerRadius: Math.max(8, root.panelRadius - 4)
+                controlDensity: root.controlDensity
+                styleVariant: root.sessionStyle
+                panelBorderStrength: root.panelBorderStrength
             }
 
             Rectangle {
@@ -261,6 +477,9 @@ Rectangle {
                 fontFamily: themeFonts.uiFamily
                 showBackground: false
                 cornerRadius: Math.max(8, root.panelRadius - 4)
+                controlDensity: root.controlDensity
+                styleVariant: root.sessionStyle
+                panelBorderStrength: root.panelBorderStrength
                 onRequestSuspend: {
                     if (typeof sddm !== "undefined" && sddm) {
                         sddm.suspend()

@@ -11,8 +11,10 @@ usage() {
 Usage: ./scripts/install.sh [--target <dir>] [--preset <name>] [--dry-run]
 
 Examples:
-  ./scripts/install.sh
-  ./scripts/install.sh --preset rain
+    ./scripts/install.sh --preset default
+    ./scripts/install.sh --preset night
+    ./scripts/install.sh --preset rain
+    ./scripts/install.sh --preset pixel
   ./scripts/install.sh --target /usr/share/sddm/themes/NightframeSDDM
 EOF
 }

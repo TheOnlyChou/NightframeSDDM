@@ -5,10 +5,11 @@ Text {
 
     property string fontFamily: "Noto Sans"
     property color textColor: "#8ea5c7"
+    property real textOpacity: 0.78
 
     text: Qt.formatDate(new Date(), "ddd, dd MMM yyyy")
     color: root.textColor
-    opacity: 0.78
+    opacity: Math.max(0.55, Math.min(1.0, root.textOpacity))
     font.family: root.fontFamily
     font.pixelSize: 14
     font.letterSpacing: 0.8

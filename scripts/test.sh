@@ -2,30 +2,27 @@
 set -euo pipefail
 
 THEME_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MODE="image"
 PRESET=""
 
 usage() {
     cat <<'EOF'
-Usage: ./scripts/test.sh [image|video] [--preset <name>] [--mode image|video] [--list-presets]
+Usage: ./scripts/test.sh [--preset <name>] [--list-presets]
 
 Examples:
   ./scripts/test.sh
-  ./scripts/test.sh image
-  ./scripts/test.sh video --preset rain
+    ./scripts/test.sh --preset default
+    ./scripts/test.sh --preset pixel
 EOF
+}
+
+config_value() {
+        local key="$1"
+        local file="$2"
+        grep -E "^${key}=" "$file" | head -n1 | cut -d'=' -f2-
 }
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        image|video)
-            MODE="$1"
-            shift
-            ;;
-        --mode)
-            MODE="${2:-}"
-            shift 2
-            ;;
         --preset)
             PRESET="${2:-}"
             shift 2
@@ -48,12 +45,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ "${MODE}" != "image" && "${MODE}" != "video" ]]; then
-    echo "Invalid mode: ${MODE}" >&2
-    usage >&2
-    exit 1
-fi
-
 required_files=(
     "${THEME_DIR}/Main.qml"
     "${THEME_DIR}/metadata.desktop"
@@ -73,10 +64,6 @@ fi
 
 if [[ ! -f "${THEME_DIR}/assets/fonts/JetBrainsMono-Regular.ttf" ]]; then
     echo "Warning: custom clock font not found. Monospace fallback will be used." >&2
-fi
-
-if [[ "${MODE}" == "video" && ! -f "${THEME_DIR}/assets/video/nightframe.mp4" ]]; then
-    echo "Warning: assets/video/nightframe.mp4 not found. Component-level fallback to image will be used." >&2
 fi
 
 if command -v sddm-greeter-qt6 >/dev/null 2>&1; then
@@ -104,12 +91,19 @@ if [[ -n "${PRESET}" ]]; then
     cp "${preset_file}" "${tmp_theme_dir}/theme.conf"
 fi
 
-if [[ "${MODE}" == "video" ]]; then
-    sed -i 's/^BackgroundMode=.*/BackgroundMode=video/' "${tmp_theme_dir}/theme.conf"
-    sed -i 's/^UseVideo=.*/UseVideo=true/' "${tmp_theme_dir}/theme.conf"
-else
-    sed -i 's/^BackgroundMode=.*/BackgroundMode=image/' "${tmp_theme_dir}/theme.conf"
-    sed -i 's/^UseVideo=.*/UseVideo=false/' "${tmp_theme_dir}/theme.conf"
+resolved_mode="$(config_value "BackgroundMode" "${tmp_theme_dir}/theme.conf" | tr '[:upper:]' '[:lower:]')"
+resolved_use_video="$(config_value "UseVideo" "${tmp_theme_dir}/theme.conf" | tr '[:upper:]' '[:lower:]')"
+resolved_mode="${resolved_mode:-image}"
+video_enabled="false"
+if [[ "${resolved_mode}" == "video" || "${resolved_use_video}" == "true" ]]; then
+    video_enabled="true"
+fi
+
+if [[ "${video_enabled}" == "true" ]]; then
+    resolved_video_path="$(config_value "BackgroundVideo" "${tmp_theme_dir}/theme.conf")"
+    if [[ -n "${resolved_video_path}" && ! -f "${tmp_theme_dir}/${resolved_video_path}" ]]; then
+        echo "Warning: configured preset video not found (${resolved_video_path}). Component-level fallback to image will be used." >&2
+    fi
 fi
 
 # Prefer software decoding for local preview to avoid noisy hardware backend failures.
@@ -121,5 +115,9 @@ fi
 
 active_preset="$(grep -E '^Preset=' "${tmp_theme_dir}/theme.conf" | head -n1 | cut -d'=' -f2 || true)"
 active_preset="${active_preset:-default}"
-echo "Running theme preview from: ${THEME_DIR} (mode=${MODE}, preset=${active_preset})"
+effective_mode="image"
+if [[ "${video_enabled}" == "true" ]]; then
+    effective_mode="video"
+fi
+echo "Running theme preview from: ${THEME_DIR} (mode=${effective_mode}, preset=${active_preset})"
 "${GREETER_BIN}" --test-mode --theme "${tmp_theme_dir}"
