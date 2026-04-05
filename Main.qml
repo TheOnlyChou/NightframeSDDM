@@ -241,7 +241,66 @@ Rectangle {
 
     property string statusText: ""
     property string statusType: "info"
+    property bool authenticating: false
     property bool videoPlaybackFailed: false
+    property var keyboardLayoutModelRef: {
+        if (typeof keyboardLayoutModel !== "undefined") {
+            return keyboardLayoutModel
+        }
+        if (typeof keyboardModel !== "undefined") {
+            return keyboardModel
+        }
+        return null
+    }
+    property int keyboardLayoutIndex: 0
+    function keyboardLayoutCount() {
+        return keyboardLayoutModelRef && keyboardLayoutModelRef.count ? keyboardLayoutModelRef.count : 0
+    }
+
+    function keyboardLayoutNameAt(index) {
+        if (!keyboardLayoutModelRef || typeof keyboardLayoutModelRef.get !== "function" || index < 0 || index >= keyboardLayoutCount()) {
+            if (typeof keyboardLayout !== "undefined" && keyboardLayout) {
+                return keyboardLayout.toString()
+            }
+            return "Layout"
+        }
+        var layoutEntry = keyboardLayoutModelRef.get(index)
+        if (!layoutEntry) {
+            return "Layout"
+        }
+        return (layoutEntry.shortName || layoutEntry.name || layoutEntry.layout || "Layout").toString()
+    }
+
+    function setKeyboardLayout(index) {
+        if (index < 0 || index >= keyboardLayoutCount()) {
+            return
+        }
+        keyboardLayoutIndex = index
+
+        if (keyboardLayoutModelRef && typeof keyboardLayoutModelRef.setCurrentIndex === "function") {
+            keyboardLayoutModelRef.setCurrentIndex(index)
+            return
+        }
+
+        if (keyboardLayoutModelRef && keyboardLayoutModelRef.currentIndex !== undefined) {
+            keyboardLayoutModelRef.currentIndex = index
+            return
+        }
+
+        if (typeof sddm !== "undefined" && sddm && typeof sddm.setLayout === "function") {
+            sddm.setLayout(keyboardLayoutNameAt(index))
+            return
+        }
+
+        root.statusText = "Keyboard layout switching not exposed by this greeter build"
+        root.statusType = "info"
+    }
+
+    Component.onCompleted: {
+        if (keyboardLayoutModelRef && keyboardLayoutModelRef.currentIndex !== undefined) {
+            keyboardLayoutIndex = Math.max(0, keyboardLayoutModelRef.currentIndex)
+        }
+    }
 
     Loader {
         id: backgroundLoader
@@ -375,6 +434,7 @@ Rectangle {
         userModelRef: typeof userModel !== "undefined" ? userModel : null
         messageText: root.statusText
         messageType: root.statusType
+        authenticating: root.authenticating
         palette: palette
         fontFamily: themeFonts.uiFamily
         panelOpacity: root.panelOpacity
@@ -402,11 +462,13 @@ Rectangle {
         }
 
         onLoginRequested: function(userName, password) {
-            root.statusText = "Authenticating..."
+            root.authenticating = true
+            root.statusText = ""
             root.statusType = "info"
             if (typeof sddm !== "undefined" && sddm) {
                 sddm.login(userName, password, sessionBar.currentIndex)
             } else {
+                root.authenticating = false
                 root.statusText = "Test mode: login action"
                 root.statusType = "info"
             }
@@ -470,6 +532,132 @@ Rectangle {
                 opacity: 0.45
             }
 
+            Item {
+                id: keyboardLayoutControl
+                visible: root.keyboardLayoutCount() > 0 || (typeof keyboardLayout !== "undefined" && keyboardLayout)
+                width: Math.round(metrics.compactSelectorWidth * root.controlDensity)
+                height: parent.height
+
+                readonly property bool hovered: keyboardLayoutArea.containsMouse
+                readonly property bool menuOpen: keyboardLayoutPopup.visible
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: Math.max(8, root.panelRadius - 4)
+                    color: keyboardLayoutControl.menuOpen
+                           ? (root.sessionStyle === "pixel" ? "#2f2560" : "#2a3f5a")
+                           : (keyboardLayoutControl.hovered ? "#24364c" : "transparent")
+                    border.width: 1
+                    border.color: (keyboardLayoutControl.hovered || keyboardLayoutControl.menuOpen)
+                                  ? palette.accent
+                                  : palette.borderSubtle
+                }
+
+                Text {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.keyboardLayoutNameAt(root.keyboardLayoutIndex)
+                    color: palette.textPrimary
+                    font.family: themeFonts.uiFamily
+                    font.pixelSize: Math.round(12 * root.controlDensity)
+                    elide: Text.ElideRight
+                    width: parent.width - 26
+                }
+
+                Text {
+                    anchors.right: parent.right
+                    anchors.rightMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: keyboardLayoutControl.menuOpen ? "▴" : "▾"
+                    color: palette.textMuted
+                    font.family: themeFonts.uiFamily
+                    font.pixelSize: Math.round(11 * root.controlDensity)
+                }
+
+                MouseArea {
+                    id: keyboardLayoutArea
+                    anchors.fill: parent
+                    enabled: root.keyboardLayoutCount() > 1
+                    hoverEnabled: true
+                    onClicked: {
+                        if (keyboardLayoutPopup.visible) {
+                            keyboardLayoutPopup.close()
+                        } else {
+                            keyboardLayoutPopup.open()
+                        }
+                    }
+                }
+
+                Popup {
+                    id: keyboardLayoutPopup
+                    x: keyboardLayoutControl.x
+                    y: keyboardLayoutControl.y - height + 2
+                    width: keyboardLayoutControl.width
+                    height: Math.min(
+                                Math.max(1, root.keyboardLayoutCount()) * Math.round(32 * root.controlDensity) + 10,
+                                Math.round(Math.min(metrics.compactListMaxHeight, 176) * root.controlDensity)
+                            )
+                    modal: false
+                    focus: true
+                    padding: 4
+                    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+                    background: Rectangle {
+                        radius: Math.max(6, root.panelRadius - 3)
+                        color: palette.panelGlassStrong
+                        border.width: Math.max(1, Math.round(root.panelBorderStrength))
+                        border.color: palette.borderSubtle
+                    }
+
+                    ListView {
+                        anchors.fill: parent
+                        clip: true
+                        model: root.keyboardLayoutCount()
+
+                        delegate: Rectangle {
+                            width: parent.width
+                            height: Math.round(32 * root.controlDensity)
+                            radius: Math.max(4, root.panelRadius - 6)
+                            color: index === root.keyboardLayoutIndex
+                                   ? (root.sessionStyle === "pixel" ? "#3a2c69" : "#2b3f5c")
+                                   : (layoutDelegateArea.containsMouse ? "#22344a" : "transparent")
+
+                            Text {
+                                anchors.left: parent.left
+                                anchors.leftMargin: 10
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: root.keyboardLayoutNameAt(index)
+                                color: palette.textPrimary
+                                font.family: themeFonts.uiFamily
+                                font.pixelSize: Math.round(12 * root.controlDensity)
+                                elide: Text.ElideRight
+                                width: parent.width - 16
+                            }
+
+                            MouseArea {
+                                id: layoutDelegateArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: {
+                                    root.setKeyboardLayout(index)
+                                    keyboardLayoutPopup.close()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                visible: keyboardLayoutControl.visible
+                width: 1
+                height: parent.height - 8
+                anchors.verticalCenter: parent.verticalCenter
+                color: palette.separatorSoft
+                opacity: 0.45
+            }
+
             Power.PowerBar {
                 id: powerBar
                 height: parent.height
@@ -512,17 +700,20 @@ Rectangle {
         target: typeof sddm !== "undefined" ? sddm : null
 
         function onLoginSucceeded() {
-            root.statusText = "Login successful"
-            root.statusType = "ok"
+            root.authenticating = false
+            root.statusText = ""
+            root.statusType = "info"
         }
 
         function onLoginFailed() {
+            root.authenticating = false
             root.statusText = "Invalid credentials"
             root.statusType = "error"
             loginPanel.clearPassword()
         }
 
         function onInformationMessage(message) {
+            root.authenticating = false
             root.statusText = message
             root.statusType = "info"
         }

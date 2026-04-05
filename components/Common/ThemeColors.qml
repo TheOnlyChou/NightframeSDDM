@@ -35,4 +35,8 @@ QtObject {
     )
     readonly property color panelGlass: Qt.rgba(panelTint.r, panelTint.g, panelTint.b, 0.34)
     readonly property color panelGlassStrong: Qt.rgba(panelTint.r, panelTint.g, panelTint.b, 0.52)
+    readonly property color controlHover: Qt.rgba(accent.r, accent.g, accent.b, 0.24)
+    readonly property color controlPressed: Qt.rgba(accent.r, accent.g, accent.b, 0.34)
+    readonly property color controlDangerHover: Qt.rgba(danger.r, danger.g, danger.b, 0.22)
+    readonly property color controlDangerPressed: Qt.rgba(danger.r, danger.g, danger.b, 0.32)
 }

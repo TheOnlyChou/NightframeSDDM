@@ -25,23 +25,13 @@ It keeps wallpaper visibility high, uses a minimal login surface, and includes S
 
 ## Presets Preview
 
-NightframeSDDM includes four distinct preset identities, each with its own mood, typography, color treatment, and media direction.
+| **Default** | **Night** |
+|---|---|
+| ![Default preset](screenshots/default.png) | ![Night preset](screenshots/night.png) |
 
-### Default
-Balanced urban anime baseline with a clean teal/cyan atmosphere.  
-![Default preset](screenshots/default.png)
-
-### Night
-A darker, more premium cinematic preset with a restrained celestial blue mood.  
-![Night preset](screenshots/night.png)
-
-### Rain
-A softer and cozier preset with a rainy indoor atmosphere and gentler surfaces.  
-![Rain preset](screenshots/rain.png)
-
-### Pixel
-A more stylized retro preset with a neon arcade-inspired identity.  
-![Pixel preset](screenshots/pixel.png)
+| **Rain** | **Pixel** |
+|---|---|
+| ![Rain preset](screenshots/rain.png) | ![Pixel preset](screenshots/pixel.png) |
 
 ## Project Tree
 

@@ -15,6 +15,8 @@ QtObject {
     readonly property int floatingControlsHeight: 52
     readonly property int floatingControlsRadius: 12
     readonly property int floatingControlsPadding: 6
+    readonly property int compactSelectorWidth: 112
+    readonly property int compactListMaxHeight: 210
     readonly property int loginPanelInnerSpacing: 10
     readonly property int loginPanelSectionGap: 2
 }
