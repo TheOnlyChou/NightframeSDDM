@@ -9,6 +9,7 @@ Item {
     property int currentIndex: 0
     property string demoSessionName: "Hyprland"
     property bool showBackground: true
+    property int cornerRadius: 8
 
     readonly property bool hovered: hoverArea.containsMouse
 
@@ -36,7 +37,7 @@ Item {
     Rectangle {
         visible: root.showBackground
         anchors.fill: parent
-        radius: 10
+        radius: root.cornerRadius
         color: "#44212f46"
         border.width: 1
         border.color: palette ? palette.borderSubtle : "#2a3f5f"
@@ -44,7 +45,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: 8
+        radius: root.cornerRadius
         color: hovered ? "#1f2a3a52" : "transparent"
         border.width: 1
         border.color: hovered ? (palette ? palette.accent : "#4ea0ff") : "transparent"
@@ -124,5 +125,11 @@ Item {
         anchors.fill: parent
         acceptedButtons: Qt.NoButton
         hoverEnabled: true
+    }
+
+    Behavior on opacity {
+        NumberAnimation {
+            duration: 100
+        }
     }
 }

@@ -13,6 +13,8 @@ Item {
     property string messageType: "info"
     property string titleText: "Welcome"
     property string subtitleText: "Sign in to start session"
+    property real panelOpacity: 0.24
+    property int panelRadius: 14
 
     signal loginRequested(string userName, string password)
 
@@ -28,8 +30,9 @@ Item {
     Rectangle {
         anchors.fill: panelColumn
         anchors.margins: -20
-        radius: 14
+        radius: root.panelRadius
         color: "#3c101a29"
+        opacity: root.panelOpacity
         border.width: 1
         border.color: palette ? palette.borderSubtle : "#2a3f5f"
     }

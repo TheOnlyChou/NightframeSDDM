@@ -2,10 +2,55 @@
 set -euo pipefail
 
 THEME_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MODE="${1:-image}"
+MODE="image"
+PRESET=""
+
+usage() {
+    cat <<'EOF'
+Usage: ./scripts/test.sh [image|video] [--preset <name>] [--mode image|video] [--list-presets]
+
+Examples:
+  ./scripts/test.sh
+  ./scripts/test.sh image
+  ./scripts/test.sh video --preset rain
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        image|video)
+            MODE="$1"
+            shift
+            ;;
+        --mode)
+            MODE="${2:-}"
+            shift 2
+            ;;
+        --preset)
+            PRESET="${2:-}"
+            shift 2
+            ;;
+        --list-presets)
+            if [[ -d "${THEME_DIR}/presets" ]]; then
+                find "${THEME_DIR}/presets" -maxdepth 1 -type f -name '*.conf' -printf '%f\n' | sed 's/\.conf$//' | sort
+            fi
+            exit 0
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $1" >&2
+            usage >&2
+            exit 1
+            ;;
+    esac
+done
 
 if [[ "${MODE}" != "image" && "${MODE}" != "video" ]]; then
-    echo "Usage: $0 [image|video]" >&2
+    echo "Invalid mode: ${MODE}" >&2
+    usage >&2
     exit 1
 fi
 
@@ -50,6 +95,15 @@ cleanup() {
 }
 trap cleanup EXIT
 
+if [[ -n "${PRESET}" ]]; then
+    preset_file="${THEME_DIR}/presets/${PRESET}.conf"
+    if [[ ! -f "${preset_file}" ]]; then
+        echo "Preset not found: ${PRESET}" >&2
+        exit 1
+    fi
+    cp "${preset_file}" "${tmp_theme_dir}/theme.conf"
+fi
+
 if [[ "${MODE}" == "video" ]]; then
     sed -i 's/^BackgroundMode=.*/BackgroundMode=video/' "${tmp_theme_dir}/theme.conf"
     sed -i 's/^UseVideo=.*/UseVideo=true/' "${tmp_theme_dir}/theme.conf"
@@ -65,5 +119,7 @@ if [[ "${NIGHTFRAME_QUIET_TEST:-0}" == "1" ]]; then
     export QT_LOGGING_RULES="qt.multimedia.ffmpeg.warning=false;qt.multimedia.ffmpeg.hwaccel.warning=false"
 fi
 
-echo "Running theme preview from: ${THEME_DIR} (mode=${MODE})"
+active_preset="$(grep -E '^Preset=' "${tmp_theme_dir}/theme.conf" | head -n1 | cut -d'=' -f2 || true)"
+active_preset="${active_preset:-default}"
+echo "Running theme preview from: ${THEME_DIR} (mode=${MODE}, preset=${active_preset})"
 "${GREETER_BIN}" --test-mode --theme "${tmp_theme_dir}"

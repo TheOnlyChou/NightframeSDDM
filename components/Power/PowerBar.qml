@@ -11,6 +11,7 @@ Item {
     signal requestReboot()
     signal requestShutdown()
     property bool showBackground: true
+    property int cornerRadius: 8
 
     property url sleepIconSource: Qt.resolvedUrl("../../assets/svg/sleep.svg")
     property url rebootIconSource: Qt.resolvedUrl("../../assets/svg/reboot.svg")
@@ -22,7 +23,7 @@ Item {
     Rectangle {
         visible: root.showBackground
         anchors.fill: parent
-        radius: 10
+        radius: root.cornerRadius
         color: "#44212f46"
         border.width: 1
         border.color: palette ? palette.borderSubtle : "#2a3f5f"
@@ -47,7 +48,7 @@ Item {
             onClicked: root.requestSuspend()
 
             background: Rectangle {
-                radius: 8
+                radius: Math.max(6, root.cornerRadius - 1)
                 color: sleepButton.down ? "#344b68" : (sleepButton.hovered ? "#2a3f5a" : "transparent")
                 border.width: 1
                 border.color: (sleepButton.hovered || sleepButton.visualFocus)
@@ -64,13 +65,13 @@ Item {
             focusPolicy: Qt.StrongFocus
             display: AbstractButton.IconOnly
             icon.source: root.rebootIconSource
-            icon.width: 18
-            icon.height: 18
+            icon.width: 17
+            icon.height: 17
             icon.color: "#ffffff"
             onClicked: root.requestReboot()
 
             background: Rectangle {
-                radius: 8
+                radius: Math.max(6, root.cornerRadius - 1)
                 color: rebootButton.down ? "#344b68" : (rebootButton.hovered ? "#2a3f5a" : "transparent")
                 border.width: 1
                 border.color: (rebootButton.hovered || rebootButton.visualFocus)
@@ -93,7 +94,7 @@ Item {
             onClicked: root.requestShutdown()
 
             background: Rectangle {
-                radius: 8
+                radius: Math.max(6, root.cornerRadius - 1)
                 color: shutdownButton.down ? "#4b3a50" : (shutdownButton.hovered ? "#3e3243" : "transparent")
                 border.width: 1
                 border.color: (shutdownButton.hovered || shutdownButton.visualFocus)

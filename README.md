@@ -1,23 +1,23 @@
 # NightframeSDDM
 
-NightframeSDDM is a custom cinematic dark SDDM theme built with Qt6/QML.
+NightframeSDDM is a custom dark cinematic SDDM theme built with Qt6/QML.
 
-It focuses on anime-night / cyber-night wallpaper aesthetics with a readable, minimal login UI and optional SVG power controls.
+It keeps wallpaper visibility high, uses a minimal login surface, and includes SVG power controls with optional video background support.
 
-## Current Features
+## Features
 
-- Image-first background mode (safe default)
+- Stable image-first mode (default)
 - Optional video background mode
-- Automatic fallback to image background if video fails
-- Subtle dark overlay for readability
-- Modular QML component structure
-- SVG power buttons (sleep, reboot, shutdown)
+- Automatic fallback to image when video fails
+- Modular QML architecture for maintainability
+- Preset system via `presets/*.conf`
+- SVG icon power controls (sleep, reboot, shutdown)
 
-## Current style
+## Current Style
 
 ![Current style](image.png)
 
-## Project Structure
+## Project Tree
 
 ~~~text
 NightframeSDDM/
@@ -33,31 +33,36 @@ NightframeSDDM/
 │   ├── Power/
 │   ├── Session/
 │   └── Widgets/
+├── docs/
+│   ├── customization.md
+│   └── structure.md
+├── presets/
+│   ├── default.conf
+│   ├── night.conf
+│   ├── pixel.conf
+│   └── rain.conf
+├── scripts/
+│   ├── install.sh
+│   └── test.sh
 ├── Main.qml
 ├── metadata.desktop
 ├── qmldir
-├── scripts/
-│   └── test.sh
+├── README.md
 └── theme.conf
 ~~~
 
 ## Dependencies
 
-- SDDM with Qt6 greeter (preferred: sddm-greeter-qt6)
-- Qt6 QML modules
-- Qt Multimedia (for optional video mode)
+- SDDM with Qt6 greeter (`sddm-greeter-qt6` preferred)
+- Qt6 QML runtime
+- Qt Multimedia (only required for optional video mode)
 
 ## Local Testing
-
-From the project root:
-
-~~~bash
-./scripts/test.sh
-~~~
 
 Image mode (default):
 
 ~~~bash
+./scripts/test.sh
 ./scripts/test.sh image
 ~~~
 
@@ -67,37 +72,62 @@ Video mode (optional):
 ./scripts/test.sh video
 ~~~
 
-Optional quieter logs:
+Test with a preset:
+
+~~~bash
+./scripts/test.sh image --preset night
+./scripts/test.sh video --preset rain
+~~~
+
+List available presets:
+
+~~~bash
+./scripts/test.sh --list-presets
+~~~
+
+Reduce local multimedia warning noise:
 
 ~~~bash
 NIGHTFRAME_QUIET_TEST=1 ./scripts/test.sh video
 ~~~
 
-## Image vs Video Mode
+## Install Workflow
 
-- Default behavior uses image mode for stability.
-- Video mode is opt-in and treated as a secondary feature.
-- If video playback fails (codec/backend/hardware acceleration issues), the theme falls back to image background without breaking UI layout.
-
-## Installation Example
-
-Install under SDDM themes path:
+Install to the standard SDDM location:
 
 ~~~bash
-sudo cp -r NightframeSDDM /usr/share/sddm/themes/my-theme
+./scripts/install.sh
 ~~~
 
-Then select the theme in SDDM config.
+Install with preset:
 
-## Asset Expectations
+~~~bash
+./scripts/install.sh --preset night
+~~~
 
-- Background image path is configured in theme.conf.
-- Optional video file should be placed in assets/video/.
-- SVG power icons are in assets/svg/.
-- Optional custom fonts are in assets/fonts/.
+Custom target path:
 
-## Status
+~~~bash
+./scripts/install.sh --target /usr/share/sddm/themes/NightframeSDDM
+~~~
 
-Work in progress.
+## Image vs Optional Video
 
-This project is actively refined for stability and visuals. Some multimedia warnings can come from the local FFmpeg/hardware acceleration environment during test mode rather than from the theme logic itself.
+- Image mode is the safe default.
+- Video mode is opt-in.
+- If video decode/backend/media fails, the UI remains usable and falls back to image rendering.
+
+## Configuration and Presets
+
+- `theme.conf` is the active runtime config.
+- `Preset=<name>` indicates the intended style preset.
+- `presets/*.conf` are complete config variants that can be applied via scripts.
+
+See:
+
+- `docs/structure.md`
+- `docs/customization.md`
+
+## Notes on Multimedia Warnings
+
+Warnings about FFmpeg, VAAPI, VDPAU, Bluez, or device sample formats in test mode are usually environment/runtime warnings, not necessarily theme logic errors.

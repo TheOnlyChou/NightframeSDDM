@@ -14,6 +14,7 @@ QtObject {
     readonly property color danger: "#ff6b86"
     readonly property color success: "#8be6c5"
     readonly property color borderSubtle: "#2a3f5f"
+    readonly property color separatorSoft: "#355174"
     readonly property color panelGlass: "#3a111b2b"
     readonly property color panelGlassStrong: "#4a121f33"
     readonly property color accent: accentOverride !== "" ? accentOverride : "#4ea0ff"

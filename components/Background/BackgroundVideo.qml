@@ -7,14 +7,18 @@ Item {
     property url fallbackSource: ""
     property bool playing: true
     readonly property bool playbackError: mediaPlayer.error !== MediaPlayer.NoError
+    property bool failureNotified: false
 
     signal playbackFailed()
 
     function notifyPlaybackFailure() {
-        if (root.playbackError) {
+        if (root.playbackError && !root.failureNotified) {
+            root.failureNotified = true
             root.playbackFailed()
         }
     }
+
+    onSourceChanged: root.failureNotified = false
 
     Rectangle {
         anchors.fill: parent
