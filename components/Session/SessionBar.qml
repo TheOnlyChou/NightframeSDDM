@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQml 2.15
 
 Item {
     id: root
@@ -20,16 +21,13 @@ Item {
 
     readonly property bool hovered: hoverArea.containsMouse
     readonly property bool menuOpen: sessionPopup.visible
-    readonly property bool hasRealSessionModel: modelCount() > 0 && typeof sessionModelRef.get === "function"
+    readonly property bool hasRealSessionModel: modelCount() > 0
     readonly property bool usingDemoFallback: !hasRealSessionModel && allowDemoFallback
     readonly property int selectedSessionIndex: hasRealSessionModel ? Math.max(0, Math.min(currentIndex, modelCount() - 1)) : -1
     readonly property string selectedSessionName: sessionNameAt(currentIndex)
-    readonly property string selectedSessionIdentifier: hasRealSessionModel ? modelSessionIdentifierAt(selectedSessionIndex) : ""
     readonly property var loginSessionValue: {
         if (hasRealSessionModel) {
-            if (selectedSessionIdentifier.length > 0) {
-                return selectedSessionIdentifier
-            }
+            // SDDM login accepts session index reliably across greeter/session model variants.
             return selectedSessionIndex
         }
         if (usingDemoFallback) {
@@ -45,41 +43,64 @@ Item {
         return sessionModelRef && sessionModelRef.count ? sessionModelRef.count : 0
     }
 
-    function modelSessionAt(index) {
-        if (!hasRealSessionModel || index < 0 || index >= modelCount()) {
-            return null
-        }
-        return sessionModelRef.get(index)
-    }
-
-    function modelSessionIdentifierFromEntry(entry) {
-        if (!entry) {
+    function roleValue(modelObj, roleName) {
+        if (!modelObj || !roleName || modelObj[roleName] === undefined || modelObj[roleName] === null) {
             return ""
         }
-        var candidates = [entry.key, entry.id, entry.desktopFile, entry.fileName, entry.exec, entry.name]
+        var roleText = modelObj[roleName].toString().trim()
+        return roleText.length > 0 ? roleText : ""
+    }
+
+    function resolveSessionIdentifier(modelObj, modelDataValue, fallbackName) {
+        var candidates = [
+            roleValue(modelObj, "key"),
+            roleValue(modelObj, "id"),
+            roleValue(modelObj, "desktopFile"),
+            roleValue(modelObj, "fileName"),
+            roleValue(modelObj, "exec"),
+            roleValue(modelObj, "name"),
+            (modelDataValue !== undefined && modelDataValue !== null) ? modelDataValue.toString().trim() : "",
+            (fallbackName !== undefined && fallbackName !== null) ? fallbackName.toString().trim() : ""
+        ]
         for (var i = 0; i < candidates.length; i++) {
             var value = candidates[i]
-            if (value !== undefined && value !== null && value.toString().trim().length > 0) {
-                return value.toString()
+            if (value.length > 0) {
+                return value
             }
         }
         return ""
     }
 
-    function modelSessionNameAt(index) {
-        var s = modelSessionAt(index)
-        if (!s) {
-            return ""
+    function resolveSessionName(modelObj, modelDataValue) {
+        var candidates = [
+            roleValue(modelObj, "name"),
+            roleValue(modelObj, "display"),
+            roleValue(modelObj, "displayName"),
+            roleValue(modelObj, "label"),
+            roleValue(modelObj, "id"),
+            roleValue(modelObj, "key"),
+            (modelDataValue !== undefined && modelDataValue !== null) ? modelDataValue.toString().trim() : ""
+        ]
+        for (var i = 0; i < candidates.length; i++) {
+            if (candidates[i].length > 0) {
+                return candidates[i]
+            }
         }
-        if (s.name !== undefined && s.name !== null && s.name.toString().trim().length > 0) {
-            return s.name.toString()
-        }
-        return modelSessionIdentifierFromEntry(s)
+        return ""
     }
 
-    function modelSessionIdentifierAt(index) {
-        var s = modelSessionAt(index)
-        return modelSessionIdentifierFromEntry(s)
+    function modelEntryAt(index) {
+        if (!hasRealSessionModel || index < 0 || index >= modelCount()) {
+            return null
+        }
+        var obj = sessionEntries.objectAt(index)
+        if (!obj) {
+            return null
+        }
+        return {
+            name: obj.sessionName,
+            identifier: obj.sessionIdentifier
+        }
     }
 
     function effectiveDemoList() {
@@ -104,7 +125,11 @@ Item {
             return emptySessionLabel
         }
         if (hasRealSessionModel) {
-            return modelSessionNameAt(index)
+            var entry = modelEntryAt(index)
+            if (entry && entry.name.length > 0) {
+                return entry.name
+            }
+            return emptySessionLabel
         }
         var demoList = effectiveDemoList()
         return demoList[index] || emptySessionLabel
@@ -260,6 +285,18 @@ Item {
         }
     }
 
+    Instantiator {
+        id: sessionEntries
+        model: root.hasRealSessionModel ? root.sessionModelRef : null
+        delegate: QtObject {
+            required property var model
+            required property var modelData
+
+            readonly property string sessionName: root.resolveSessionName(model, modelData)
+            readonly property string sessionIdentifier: root.resolveSessionIdentifier(model, modelData, sessionName)
+        }
+    }
+
     Popup {
         id: sessionPopup
         x: root.x
@@ -282,7 +319,7 @@ Item {
             id: sessionListView
             anchors.fill: parent
             clip: true
-            model: root.sessionCount()
+            model: root.hasRealSessionModel ? root.sessionModelRef : (root.usingDemoFallback ? root.effectiveDemoList() : [])
             boundsBehavior: Flickable.StopAtBounds
             currentIndex: root.currentIndex
 
@@ -303,7 +340,9 @@ Item {
                     anchors.leftMargin: Math.round(10 * root.controlDensity)
                     anchors.right: parent.right
                     anchors.rightMargin: Math.round(10 * root.controlDensity)
-                    text: root.sessionNameAt(index)
+                    text: root.hasRealSessionModel
+                          ? root.resolveSessionName(model, modelData)
+                          : (modelData !== undefined && modelData !== null ? modelData.toString() : root.emptySessionLabel)
                     color: palette ? palette.textPrimary : "#d9e7ff"
                     font.family: root.fontFamily
                     font.pixelSize: Math.round(13 * root.controlDensity)

@@ -25,8 +25,11 @@ Item {
     property int controlSpacing: 10
     property real panelBorderStrength: 1.0
     property string styleVariant: "balanced"
+    readonly property string selectedUserName: userDisplay.selectedUser
+    readonly property string enteredPassword: passwordInput.text
 
     signal loginRequested(string userName, string password)
+    signal passiveAuthRequested(string userName)
 
     height: panelColumn.implicitHeight
 
@@ -35,6 +38,31 @@ Item {
     function clearPassword() {
         passwordInput.text = ""
         passwordInput.forceActiveFocus()
+        schedulePassiveAuthRequest()
+    }
+
+    function schedulePassiveAuthRequest() {
+        passiveAuthDebounce.restart()
+    }
+
+    function requestPassiveAuthIfEligible() {
+        if (root.authenticating) {
+            return
+        }
+        if (!root.selectedUserName || root.selectedUserName.toString().trim().length === 0) {
+            return
+        }
+        if (root.enteredPassword && root.enteredPassword.toString().length > 0) {
+            return
+        }
+        root.passiveAuthRequested(root.selectedUserName)
+    }
+
+    Timer {
+        id: passiveAuthDebounce
+        interval: 120
+        repeat: false
+        onTriggered: root.requestPassiveAuthIfEligible()
     }
 
     Rectangle {
@@ -90,6 +118,15 @@ Item {
             fontFamily: root.fontFamily
         }
 
+        Connections {
+            target: userDisplay
+            ignoreUnknownSignals: true
+
+            function onSelectedUserChanged() {
+                root.schedulePassiveAuthRequest()
+            }
+        }
+
         Auth.PasswordInput {
             id: passwordInput
             width: parent.width
@@ -106,6 +143,11 @@ Item {
             onAccepted: {
                 if (!root.authenticating) {
                     root.loginRequested(userDisplay.selectedUser, text)
+                }
+            }
+            onTextChanged: {
+                if (text.length === 0) {
+                    root.schedulePassiveAuthRequest()
                 }
             }
         }
@@ -164,5 +206,14 @@ Item {
         }
     }
 
-    Component.onCompleted: passwordInput.forceActiveFocus()
+    onAuthenticatingChanged: {
+        if (!root.authenticating) {
+            root.schedulePassiveAuthRequest()
+        }
+    }
+
+    Component.onCompleted: {
+        passwordInput.forceActiveFocus()
+        root.schedulePassiveAuthRequest()
+    }
 }

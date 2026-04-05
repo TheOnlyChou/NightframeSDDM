@@ -248,8 +248,20 @@ Rectangle {
     property int authAttemptCount: 0
     property string runtimeModeLabel: testMode ? "Preview mode (no PAM/fprintd)" : "SDDM runtime mode"
     property string authAttemptNote: ""
+    property bool passiveAuthEnabled: !testMode
 
     function beginAuthenticationAttempt(userName, password) {
+        if (root.authenticating) {
+            return
+        }
+
+        var normalizedUser = userName ? userName.toString().trim() : ""
+        if (normalizedUser.length === 0) {
+            root.statusText = "Select a user to authenticate"
+            root.statusType = "info"
+            return
+        }
+
         root.authenticating = true
         root.authAttemptCount = root.authAttemptCount + 1
         root.authAttemptNote = "Authentication attempt #" + root.authAttemptCount
@@ -269,7 +281,7 @@ Rectangle {
             root.statusType = "info"
         }
 
-        sddm.login(userName, password, sessionBar.loginSessionValue)
+        sddm.login(normalizedUser, password, sessionBar.loginSessionValue)
     }
 
     Timer {
@@ -533,6 +545,13 @@ Rectangle {
 
         onLoginRequested: function(userName, password) {
             root.beginAuthenticationAttempt(userName, password)
+        }
+
+        onPassiveAuthRequested: function(userName) {
+            if (!root.passiveAuthEnabled) {
+                return
+            }
+            root.beginAuthenticationAttempt(userName, "")
         }
     }
 
