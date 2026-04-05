@@ -84,6 +84,13 @@ Preset-driven testing:
 ./scripts/test.sh --preset pixel
 ~~~
 
+Enable authentication debug overlay during preview:
+
+~~~bash
+./scripts/test.sh --debug-auth
+./scripts/test.sh --preset night --debug-auth
+~~~
+
 List available presets:
 
 ~~~bash
@@ -162,3 +169,8 @@ See:
 ## Notes on Multimedia Warnings
 
 Warnings about FFmpeg, VAAPI, VDPAU, Bluez, or device sample formats in test mode are usually environment/runtime warnings, not necessarily theme logic errors.
+
+## Authentication Preview Limitation
+
+`sddm-greeter --test-mode` is a theme preview path and does not validate real PAM authentication modules such as fingerprint (`fprintd`).
+Use installed SDDM runtime for end-to-end authentication testing.

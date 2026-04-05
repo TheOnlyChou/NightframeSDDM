@@ -66,6 +66,13 @@ Install with preset:
 Video mode is optional and never required for layout correctness.
 If video playback fails, NightframeSDDM falls back to image mode in runtime.
 
+## Session Selector Runtime Behavior
+
+- In installed SDDM runtime, session entries are read only from the real `sessionModel`.
+- Demo entries are not injected during normal installed runtime.
+- Demo fallback sessions are used only in explicit greeter test mode (for local preview).
+- Login uses the selected real session value exposed by the session selector, keeping UI selection and launched desktop session synchronized.
+
 ## Dependency Notes
 
 Some FFmpeg or hardware decode warnings in test mode are environment-specific and do not necessarily indicate a theme bug.

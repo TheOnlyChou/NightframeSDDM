@@ -14,6 +14,9 @@ Item {
     property string titleText: "Welcome"
     property string subtitleText: "Sign in to start session"
     property bool authenticating: false
+    property bool showDebugInfo: false
+    property string runtimeModeText: ""
+    property string authStateText: ""
     property real panelOpacity: 0.24
     property int panelRadius: 14
     property real controlDensity: 1.0
@@ -63,6 +66,15 @@ Item {
             color: palette ? palette.textMuted : "#8ea5c7"
             opacity: root.subtitleOpacity
             font.pixelSize: Math.round(13 * root.controlDensity)
+            font.family: root.fontFamily
+        }
+
+        Text {
+            visible: root.showDebugInfo && root.runtimeModeText.length > 0
+            text: root.runtimeModeText
+            color: root.runtimeModeText.indexOf("Preview mode") === 0 ? "#ffd9a6" : (palette ? palette.textMuted : "#8ea5c7")
+            opacity: root.subtitleOpacity
+            font.pixelSize: Math.round(11 * root.controlDensity)
             font.family: root.fontFamily
         }
 
@@ -116,6 +128,28 @@ Item {
                 if (!root.authenticating) {
                     root.loginRequested(userDisplay.selectedUser, passwordInput.text)
                 }
+            }
+        }
+
+        Rectangle {
+            visible: root.showDebugInfo && root.authStateText.length > 0
+            width: parent.width
+            height: Math.round(30 * root.controlDensity)
+            radius: Math.max(4, root.panelRadius - 7)
+            color: "transparent"
+            border.width: 0
+            border.color: palette ? palette.borderSubtle : "#2a3f5f"
+
+            Text {
+                anchors.fill: parent
+                anchors.leftMargin: 10
+                anchors.rightMargin: 10
+                text: root.authStateText
+                color: palette ? palette.textMuted : "#8ea5c7"
+                font.family: root.fontFamily
+                font.pixelSize: Math.round(11 * root.controlDensity)
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
             }
         }
 

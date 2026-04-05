@@ -33,13 +33,13 @@ Rectangle {
 
     Text {
         anchors.centerIn: parent
-        text: root.busy ? "Signing in" : root.text
+        visible: !root.busy
+        text: root.text
         color: root.colorText
         font.pixelSize: Math.round((root.styleVariant === "pixel" ? 13 : 15) * root.controlDensity)
         font.bold: root.styleVariant !== "soft"
         font.family: root.fontFamily
         font.letterSpacing: root.styleVariant === "pixel" ? 1.0 : 0.4
-        leftPadding: root.busy ? Math.round(20 * root.controlDensity) : 0
     }
 
     BusyIndicator {
@@ -49,7 +49,7 @@ Rectangle {
         height: width
         anchors.verticalCenter: parent.verticalCenter
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.horizontalCenterOffset: -Math.round(34 * root.controlDensity)
+        anchors.horizontalCenterOffset: 0
     }
 
     MouseArea {

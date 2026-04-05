@@ -5,11 +5,13 @@ Item {
     id: root
 
     property var sessionModelRef: null
+    property bool allowDemoFallback: false
     property var palette: null
     property string fontFamily: "Noto Sans"
     property int currentIndex: 0
     property string demoSessionName: "Hyprland"
     property var demoSessionList: ["Hyprland", "GNOME", "Plasma"]
+    property string emptySessionLabel: "No session"
     property bool showBackground: true
     property int cornerRadius: 8
     property real controlDensity: 1.0
@@ -18,6 +20,23 @@ Item {
 
     readonly property bool hovered: hoverArea.containsMouse
     readonly property bool menuOpen: sessionPopup.visible
+    readonly property bool hasRealSessionModel: modelCount() > 0 && typeof sessionModelRef.get === "function"
+    readonly property bool usingDemoFallback: !hasRealSessionModel && allowDemoFallback
+    readonly property int selectedSessionIndex: hasRealSessionModel ? Math.max(0, Math.min(currentIndex, modelCount() - 1)) : -1
+    readonly property string selectedSessionName: sessionNameAt(currentIndex)
+    readonly property string selectedSessionIdentifier: hasRealSessionModel ? modelSessionIdentifierAt(selectedSessionIndex) : ""
+    readonly property var loginSessionValue: {
+        if (hasRealSessionModel) {
+            if (selectedSessionIdentifier.length > 0) {
+                return selectedSessionIdentifier
+            }
+            return selectedSessionIndex
+        }
+        if (usingDemoFallback) {
+            return selectedSessionName
+        }
+        return ""
+    }
 
     width: Math.round((styleVariant === "pixel" ? 236 : 250) * controlDensity)
     height: Math.round(40 * controlDensity)
@@ -26,24 +45,41 @@ Item {
         return sessionModelRef && sessionModelRef.count ? sessionModelRef.count : 0
     }
 
-    function modelSessionNameAt(index) {
-        if (!sessionModelRef || typeof sessionModelRef.get !== "function" || index < 0 || index >= modelCount()) {
-            return ""
+    function modelSessionAt(index) {
+        if (!hasRealSessionModel || index < 0 || index >= modelCount()) {
+            return null
         }
-        var s = sessionModelRef.get(index)
-        return s && s.name ? s.name.toString() : ""
+        return sessionModelRef.get(index)
     }
 
-    function modelHasUsableNames() {
-        if (!sessionModelRef || typeof sessionModelRef.get !== "function" || modelCount() <= 0) {
-            return false
+    function modelSessionIdentifierFromEntry(entry) {
+        if (!entry) {
+            return ""
         }
-        for (var i = 0; i < modelCount(); i++) {
-            if (modelSessionNameAt(i).trim().length > 0) {
-                return true
+        var candidates = [entry.key, entry.id, entry.desktopFile, entry.fileName, entry.exec, entry.name]
+        for (var i = 0; i < candidates.length; i++) {
+            var value = candidates[i]
+            if (value !== undefined && value !== null && value.toString().trim().length > 0) {
+                return value.toString()
             }
         }
-        return false
+        return ""
+    }
+
+    function modelSessionNameAt(index) {
+        var s = modelSessionAt(index)
+        if (!s) {
+            return ""
+        }
+        if (s.name !== undefined && s.name !== null && s.name.toString().trim().length > 0) {
+            return s.name.toString()
+        }
+        return modelSessionIdentifierFromEntry(s)
+    }
+
+    function modelSessionIdentifierAt(index) {
+        var s = modelSessionAt(index)
+        return modelSessionIdentifierFromEntry(s)
     }
 
     function effectiveDemoList() {
@@ -54,29 +90,99 @@ Item {
     }
 
     function sessionCount() {
-        if (modelHasUsableNames()) {
+        if (hasRealSessionModel) {
             return modelCount()
         }
-        return effectiveDemoList().length
+        if (usingDemoFallback) {
+            return effectiveDemoList().length
+        }
+        return 0
     }
 
     function sessionNameAt(index) {
         if (index < 0 || index >= sessionCount()) {
-            return demoSessionName
+            return emptySessionLabel
         }
-        if (modelHasUsableNames()) {
-            var modelName = modelSessionNameAt(index)
-            if (modelName.trim().length > 0) {
-                return modelName
-            }
+        if (hasRealSessionModel) {
+            return modelSessionNameAt(index)
         }
         var demoList = effectiveDemoList()
-        return demoList[index] || demoSessionName
+        return demoList[index] || emptySessionLabel
+    }
+
+    function modelPreferredIndex() {
+        if (!hasRealSessionModel) {
+            return 0
+        }
+        var candidates = [
+            sessionModelRef.currentIndex,
+            sessionModelRef.lastIndex,
+            sessionModelRef.index,
+            sessionModelRef.defaultIndex
+        ]
+        for (var i = 0; i < candidates.length; i++) {
+            var idx = Number(candidates[i])
+            if (!isNaN(idx) && idx >= 0 && idx < modelCount()) {
+                return Math.floor(idx)
+            }
+        }
+        return 0
+    }
+
+    function setCurrentIndexFromUI(index) {
+        if (sessionCount() <= 0) {
+            currentIndex = 0
+            return
+        }
+
+        var clamped = Math.max(0, Math.min(index, sessionCount() - 1))
+        currentIndex = clamped
+
+        if (hasRealSessionModel) {
+            if (typeof sessionModelRef.setCurrentIndex === "function") {
+                sessionModelRef.setCurrentIndex(clamped)
+            } else if (sessionModelRef.currentIndex !== undefined) {
+                sessionModelRef.currentIndex = clamped
+            } else if (sessionModelRef.index !== undefined) {
+                sessionModelRef.index = clamped
+            }
+        }
+    }
+
+    function syncSelectionFromModel(preferModelIndex) {
+        if (hasRealSessionModel) {
+            var target = preferModelIndex ? modelPreferredIndex() : currentIndex
+            currentIndex = Math.max(0, Math.min(target, modelCount() - 1))
+            return
+        }
+        if (usingDemoFallback) {
+            currentIndex = Math.max(0, Math.min(currentIndex, sessionCount() - 1))
+            return
+        }
+        currentIndex = 0
     }
 
     Component.onCompleted: {
-        if (sessionCount() > 0) {
-            currentIndex = Math.max(0, Math.min(currentIndex, sessionCount() - 1))
+        syncSelectionFromModel(true)
+    }
+
+    onSessionModelRefChanged: syncSelectionFromModel(true)
+    onAllowDemoFallbackChanged: syncSelectionFromModel(true)
+
+    Connections {
+        target: root.sessionModelRef
+        ignoreUnknownSignals: true
+
+        function onCountChanged() {
+            root.syncSelectionFromModel(true)
+        }
+
+        function onCurrentIndexChanged() {
+            root.syncSelectionFromModel(true)
+        }
+
+        function onLastIndexChanged() {
+            root.syncSelectionFromModel(true)
         }
     }
 
@@ -115,7 +221,7 @@ Item {
         Text {
             width: parent.width - 25
             height: parent.height
-            text: root.sessionNameAt(root.currentIndex)
+            text: root.sessionCount() > 0 ? root.sessionNameAt(root.currentIndex) : root.emptySessionLabel
             color: palette ? palette.textPrimary : "#d9e7ff"
             font.family: root.fontFamily
             font.pixelSize: Math.round(14 * root.controlDensity)
@@ -209,7 +315,7 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     onClicked: {
-                        root.currentIndex = index
+                        root.setCurrentIndexFromUI(index)
                         sessionPopup.close()
                     }
                 }
