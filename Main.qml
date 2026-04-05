@@ -245,9 +245,7 @@ Rectangle {
     property bool videoPlaybackFailed: false
     property bool testMode: typeof sddm === "undefined" || !sddm
     property bool authDebugEnabled: testMode || configToBool(configOrPreset("DebugAuthFlow", "false"), false)
-    property int authAttemptCount: 0
     property string runtimeModeLabel: testMode ? "Preview mode (no PAM/fprintd)" : "SDDM runtime mode"
-    property string authAttemptNote: ""
 
     function beginAuthenticationAttempt(userName, password) {
         if (root.authenticating) {
@@ -262,13 +260,11 @@ Rectangle {
         }
 
         root.authenticating = true
-        root.authAttemptCount = root.authAttemptCount + 1
-        root.authAttemptNote = "Authentication attempt #" + root.authAttemptCount
 
         if (root.testMode) {
             root.statusText = "Preview mode only: login UI event triggered, but PAM/fprintd is not executed in --test-mode"
             root.statusType = "info"
-            previewAuthTimer.restart()
+            root.authenticating = false
             return
         }
 
@@ -281,18 +277,6 @@ Rectangle {
         }
 
         sddm.login(normalizedUser, password, sessionBar.loginSessionValue)
-    }
-
-    Timer {
-        id: previewAuthTimer
-        interval: 1200
-        repeat: false
-        onTriggered: {
-            root.authenticating = false
-            root.statusText = "Preview mode limitation: test with installed SDDM greeter for real password/fingerprint PAM authentication"
-            root.statusType = "info"
-            loginPanel.clearPassword()
-        }
     }
 
     property var keyboardLayoutModelRef: {
@@ -515,7 +499,7 @@ Rectangle {
         authenticating: root.authenticating
         showDebugInfo: root.authDebugEnabled
         runtimeModeText: root.runtimeModeLabel
-        authStateText: root.authAttemptNote
+        authStateText: ""
         palette: palette
         fontFamily: themeFonts.uiFamily
         panelOpacity: root.panelOpacity
@@ -773,14 +757,12 @@ Rectangle {
         target: typeof sddm !== "undefined" ? sddm : null
 
         function onLoginSucceeded() {
-            previewAuthTimer.stop()
             root.authenticating = false
             root.statusText = root.authDebugEnabled ? "Authentication succeeded" : ""
             root.statusType = "info"
         }
 
         function onLoginFailed() {
-            previewAuthTimer.stop()
             root.authenticating = false
             root.statusText = "Invalid credentials"
             root.statusType = "error"
@@ -788,8 +770,6 @@ Rectangle {
         }
 
         function onInformationMessage(message) {
-            previewAuthTimer.stop()
-            root.authenticating = false
             root.statusText = message
             root.statusType = "info"
         }

@@ -34,6 +34,12 @@ Item {
 
     readonly property bool hasMessage: messageText && messageText.trim().length > 0
 
+    function submitLogin() {
+        if (!root.authenticating) {
+            root.loginRequested(userDisplay.selectedUser, passwordInput.text)
+        }
+    }
+
     function clearPassword() {
         passwordInput.text = ""
         passwordInput.forceActiveFocus()
@@ -106,9 +112,7 @@ Item {
             panelBorderStrength: root.panelBorderStrength
             enabled: !root.authenticating
             onAccepted: {
-                if (!root.authenticating) {
-                    root.loginRequested(userDisplay.selectedUser, text)
-                }
+                root.submitLogin()
             }
         }
 
@@ -127,9 +131,7 @@ Item {
             busy: root.authenticating
             enabled: !root.authenticating
             onClicked: {
-                if (!root.authenticating) {
-                    root.loginRequested(userDisplay.selectedUser, passwordInput.text)
-                }
+                root.submitLogin()
             }
         }
 

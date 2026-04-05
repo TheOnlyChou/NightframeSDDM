@@ -57,11 +57,7 @@ Rectangle {
         anchors.fill: parent
         enabled: root.enabled && !root.busy
         hoverEnabled: true
-        onClicked: {
-            if (root.enabled && !root.busy) {
-                root.clicked()
-            }
-        }
+        onClicked: root.clicked()
     }
 
     Behavior on color {
