@@ -172,5 +172,5 @@ Warnings about FFmpeg, VAAPI, VDPAU, Bluez, or device sample formats in test mod
 
 ## Authentication Preview Limitation
 
-`sddm-greeter --test-mode` is a theme preview path and does not validate real PAM authentication modules such as fingerprint (`fprintd`).
+`sddm-greeter --test-mode` is a theme preview path and does not validate real PAM password authentication.
 Use installed SDDM runtime for end-to-end authentication testing.

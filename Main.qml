@@ -246,7 +246,7 @@ Rectangle {
     property bool testMode: typeof sddm === "undefined" || !sddm
     property bool authDebugEnabled: testMode || configToBool(configOrPreset("DebugAuthFlow", "false"), false)
     property int authAttemptCount: 0
-    property string runtimeModeLabel: testMode ? "Preview mode (no PAM/fprintd)" : "SDDM runtime mode"
+    property string runtimeModeLabel: testMode ? "Preview mode (no PAM auth backend)" : "SDDM runtime mode"
     property string authAttemptNote: ""
 
     function beginAuthenticationAttempt(userName, password) {
@@ -266,7 +266,7 @@ Rectangle {
         root.authAttemptNote = "Authentication attempt #" + root.authAttemptCount
 
         if (root.testMode) {
-            root.statusText = "Preview mode only: login UI event triggered, but PAM/fprintd is not executed in --test-mode"
+            root.statusText = "Preview mode only: login UI event triggered, but PAM authentication is not executed in --test-mode"
             root.statusType = "info"
             previewAuthTimer.restart()
             return
@@ -289,7 +289,7 @@ Rectangle {
         repeat: false
         onTriggered: {
             root.authenticating = false
-            root.statusText = "Preview mode limitation: test with installed SDDM greeter for real password/fingerprint PAM authentication"
+            root.statusText = "Preview mode limitation: test with installed SDDM greeter for real password PAM authentication"
             root.statusType = "info"
             loginPanel.clearPassword()
         }

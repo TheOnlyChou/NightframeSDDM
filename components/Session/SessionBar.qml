@@ -168,8 +168,6 @@ Item {
                 sessionModelRef.setCurrentIndex(clamped)
             } else if (sessionModelRef.currentIndex !== undefined) {
                 sessionModelRef.currentIndex = clamped
-            } else if (sessionModelRef.index !== undefined) {
-                sessionModelRef.index = clamped
             }
         }
     }

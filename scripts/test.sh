@@ -137,5 +137,5 @@ echo "Running theme preview from: ${THEME_DIR} (mode=${effective_mode}, preset=$
 if [[ "${DEBUG_AUTH}" == "1" ]]; then
     echo "Auth debug overlay: enabled"
 fi
-echo "Note: sddm-greeter --test-mode previews QML only and does not execute real PAM/fprintd authentication."
+echo "Note: sddm-greeter --test-mode previews QML only and does not execute real PAM password authentication."
 "${GREETER_BIN}" --test-mode --theme "${tmp_theme_dir}"

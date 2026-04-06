@@ -3,6 +3,7 @@ import QtQuick 2.15
 Item {
     id: root
     property alias text: passwordField.text
+    property bool passwordVisible: false
     property string placeholderText: "Password"
     property string colorText: "#d9e7ff"
     property string colorAccent: "#4ea0ff"
@@ -54,16 +55,61 @@ Item {
         id: passwordField
         anchors.fill: parent
         anchors.leftMargin: 14
-        anchors.rightMargin: 14
+        anchors.rightMargin: toggleContainer.width + 10
         color: root.colorText
         font.pixelSize: Math.round(17 * root.controlDensity)
         font.family: root.fontFamily
-        echoMode: TextInput.Password
+        echoMode: root.passwordVisible ? TextInput.Normal : TextInput.Password
         verticalAlignment: TextInput.AlignVCenter
         selectByMouse: true
         clip: true
 
         onAccepted: root.accepted()
+    }
+
+    Item {
+        id: toggleContainer
+        width: Math.round(58 * root.controlDensity)
+        height: parent.height
+        anchors.right: parent.right
+        anchors.rightMargin: 2
+
+        Rectangle {
+            id: toggleButton
+            width: Math.round(46 * root.controlDensity)
+            height: Math.round(28 * root.controlDensity)
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            radius: Math.round(6 * root.controlDensity)
+            color: toggleArea.pressed
+                   ? Qt.rgba(0, 0, 0, 0.34)
+                   : (toggleArea.containsMouse ? Qt.rgba(1, 1, 1, 0.10) : Qt.rgba(1, 1, 1, 0.04))
+            border.width: 1
+            border.color: root.passwordVisible
+                          ? Qt.lighter(root.colorAccent, 1.18)
+                          : Qt.rgba(1, 1, 1, 0.18)
+
+            Text {
+                anchors.centerIn: parent
+                text: root.passwordVisible ? "HIDE" : "SHOW"
+                color: root.passwordVisible ? root.colorAccent : "#8ea5c7"
+                font.pixelSize: Math.round(10 * root.controlDensity)
+                font.family: root.fontFamily
+                font.bold: true
+                font.letterSpacing: 0.6
+            }
+
+            MouseArea {
+                id: toggleArea
+                anchors.fill: parent
+                hoverEnabled: true
+                onClicked: {
+                    root.passwordVisible = !root.passwordVisible
+                    passwordField.forceActiveFocus()
+                    passwordField.cursorPosition = passwordField.length
+                }
+            }
+        }
     }
 
     MouseArea {

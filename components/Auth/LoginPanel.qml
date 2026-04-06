@@ -36,6 +36,7 @@ Item {
 
     function clearPassword() {
         passwordInput.text = ""
+        passwordInput.passwordVisible = false
         passwordInput.forceActiveFocus()
     }
 
@@ -168,5 +169,11 @@ Item {
 
     Component.onCompleted: {
         passwordInput.forceActiveFocus()
+    }
+
+    onAuthenticatingChanged: {
+        if (!root.authenticating) {
+            passwordInput.forceActiveFocus()
+        }
     }
 }
